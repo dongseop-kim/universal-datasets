@@ -26,16 +26,15 @@ def get_bboxes(bboxes: List[float]) -> np.ndarray:
     return bboxes
 
 
-def get_masks(paths_mask: List[str], target_shape: List[int], labels: List[int]) -> np.ndarray:
-    '''
-    labels : list of int (우리가 쓰는 class id. e.g. 1: Nodule)
-    '''
-    # TODO: Update 필요
+def get_mask(path_mask: str, target_shape: List[int]) -> np.ndarray:
     h, w = target_shape  # H W
-    mask = np.zeros((20, *target_shape), dtype=np.uint8)  # 255 x H x W
-    for path_mask, trainid in zip(paths_mask, labels):
-        mask_tmp = cv2.imread(path_mask, cv2.IMREAD_UNCHANGED).astype(np.uint8)
-        mask_tmp = cv2.resize(mask_tmp, (w, h), interpolation=cv2.INTER_NEAREST)
-        mask[trainid] += mask_tmp
-    mask: np.ndarray = np.where(mask > 0, 1, 0)
-    return mask  # 255 x H x W
+    mask: np.ndarray = cv2.imread(path_mask, cv2.IMREAD_UNCHANGED).astype(np.uint8)
+    mask: np.ndarray = cv2.resize(mask, (w, h), interpolation=cv2.INTER_NEAREST)
+    mask = np.squeeze(mask)
+    return mask  # H x W
+
+
+def get_masks(path_masks: List[str], target_shape: List[int]) -> np.ndarray:
+    masks: List[np.ndarray] = [get_mask(path_mask, target_shape) for path_mask in path_masks]
+    masks: np.ndarray = np.stack(masks, axis=0)  # N x H x W
+    return masks  # N x H x W
