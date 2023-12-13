@@ -1,2 +1,7 @@
 __pycache__
 *.ipynb
+user-requirements.txt
+
+# test
+getdatasets/
+tmp/
