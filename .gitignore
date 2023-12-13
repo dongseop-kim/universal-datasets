@@ -1,7 +1,8 @@
 __pycache__
 *.ipynb
+.vscode/
 user-requirements.txt
 
-# test
+# temporal
 getdatasets/
 tmp/

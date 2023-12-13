@@ -11,7 +11,7 @@ def _check_image(image:np.ndarray):
         raise ValueError("image must be uint8")
 
 
-class BaseDataset(Dataset):
+class BaseComponent(Dataset):
     def __init__(self):
         pass
 
