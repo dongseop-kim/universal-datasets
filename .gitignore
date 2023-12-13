@@ -1,8 +1,14 @@
-__pycache__
-*.ipynb
+### VSCODE ###
 .vscode/
-user-requirements.txt
 
-# temporal
+### PYTHON ###
+__pycache__
+
+### JUPYTER ###
+*.ipynb
+!example_*.ipynb
+
+### PERSONAL ###
+user-requirements.txt
 getdatasets/
 tmp/
