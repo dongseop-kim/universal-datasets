@@ -9,3 +9,13 @@ The 11 classes primarily used in the CamVid training dataset are as follows: **s
 
 [CAMVID]:http://mi.eng.cam.ac.uk/research/projects/VideoRec/CamVid/
 [CAMVID_LINK]:https://drive.google.com/file/d/15e7J7bLBosM8Aqb6LtkbD7gQFzbZ9TbY/view?usp=drive_link
+
+### [2. PASCAL VOC][VOC]
+
+PASCAL VOC Dataset은 20개의 클래스로 구성되어있으며, 2007년부터 2012년까지의 데이터셋이 존재한다. 07년도까지는 testset anootation이 공개되었지만 이후로는 공개되지 않았다. 
+데이터셋은 [여기][VOC_LINK]에서 다운로드 혹은 [prepare_dataset/voc.sh](../../prepare_dataset/voc.sh) 실행합니다.
+
+
+
+[VOC]:http://host.robots.ox.ac.uk/pascal/VOC/
+[VOC_LINK]:https://drive.google.com/file/d/15e7J7bLBosM8Aqb6LtkbD7gQFzbZ9TbY/view?usp=sharing
