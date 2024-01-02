@@ -70,7 +70,7 @@ class CamVid(BaseComponent):
         path_image = self.paths_image[index]
         path_mask = self.paths_masks[index]
 
-        image = self._load_image(path_image)
+        image = self._load_image(path_image, out_channels=3)
         mask = self._load_mask(path_mask)
         return image, mask
 
@@ -96,6 +96,5 @@ class CamVid(BaseComponent):
         assert len(paths_image) == len(paths_masks)
         assert any([p.exists() for p in paths_image])
         assert any([p.exists() for p in paths_masks])
-        assert any([p1.stem == p2.stem for p1,
-                   p2 in zip(paths_image, paths_masks)])
+        assert any([p1.stem == p2.stem for p1, p2 in zip(paths_image, paths_masks)])
         return paths_image, paths_masks
