@@ -5,7 +5,7 @@ from typing import List, Tuple, Union
 import cv2
 import numpy as np
 
-from udt.components._base import BaseComponent
+from udt.components.base import BaseComponent
 
 _CAMVID_CLASS = namedtuple('camvid_class', ['name', 'id', 'train_id',  'color'])
 CAMVID_CLASSES = [_CAMVID_CLASS('sky', 0, 0,  (128, 128, 128)),
