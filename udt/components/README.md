@@ -9,7 +9,7 @@
 
 
 ### [1. CamVid][CAMVID]
-CamVid is a road scene dataset consisting of a total of 701 images, with 367 in the training set, 101 in the validation set, and 233 in the test set. The annotations for the test set are publicly available. There are a total of 32 classes, but only 11 classes were mainly used in the experiment. You can download the dataset from the [official source][CAMVID] or execute [prepare_dataset/camvid.sh](../../prepare_dataset/camvid.sh).
+CamVid is a road scene dataset consisting of a total of 701 images, with 367 in the training set, 101 in the validation set, and 233 in the test set. The annotations for the test set are publicly available. There are a total of 32 classes, but only 11 classes were mainly used in the experiment. You can download the dataset from the [official source][CAMVID] or execute [custom source](../../scripts/camvid.sh).
 The 11 classes primarily used in the CamVid training dataset are as follows: **sky, building, columnpole, road, sidewalk, tree, sign/symbol, fence, car, pedestrian, and bicyclist**
 
 [CAMVID]:http://mi.eng.cam.ac.uk/research/projects/VideoRec/CamVid/
@@ -19,9 +19,9 @@ The 11 classes primarily used in the CamVid training dataset are as follows: **s
 
 ### [2. PASCAL VOC][VOC]
 TBU
-<!-- PASCAL VOC Dataset은 20개의 클래스로 구성되어있으며, 2007년부터 2012년까지의 데이터셋이 존재한다. 07년도까지는 testset anootation이 공개되었지만 이후로는 공개되지 않았다. 
-데이터셋은 [여기][VOC_LINK]에서 다운로드 혹은 [prepare_dataset/voc.sh](../../prepare_dataset/voc.sh) 실행합니다.
--->
+<!-- PASCAL VOC Dataset은 20개의 클래스로 구성되어있으며, 2007년부터 2012년까지의 데이터셋이 존재한다. 07년도까지는 testset anootation이 공개되었지만 이후로는 공개되지 않았다. -->
+You can download the dataset from the [official source][VOC] or execute [custom source](../../scripts/pascal_voc.sh).
+
 [VOC]:http://host.robots.ox.ac.uk/pascal/VOC/
 [VOC_LINK]:https://drive.google.com/file/d/15e7J7bLBosM8Aqb6LtkbD7gQFzbZ9TbY/view?usp=sharing
 
