@@ -5,8 +5,8 @@
 __pycache__
 
 ### JUPYTER ###
-*.ipynb
-!example_*.ipynb
+!examples/*.ipynb
+test*.ipynb
 
 ### PERSONAL ###
 user-requirements.txt
