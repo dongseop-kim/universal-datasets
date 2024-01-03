@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 
 from udt.components.base import BaseComponent
+from udt.utils.image import load_image
 
 _CAMVID_CLASS = namedtuple('camvid_class', ['name', 'id', 'train_id',  'color'])
 CAMVID_CLASSES = [_CAMVID_CLASS('sky', 0, 0,  (128, 128, 128)),
@@ -28,11 +29,10 @@ class CamVid(BaseComponent):
 
     Args:
         root : root folder for dataset
-        split : "train", "val", "test", "trainval"
+        split : 'train', 'val', 'test' and 'trainval'
         transform : Composed transforms
-
     """
-    TASK = 'segmentation'
+    TASK = ['segmentation']
     COLORMAP = np.array([c.color for c in CAMVID_CLASSES], dtype=np.uint8)
 
     def __init__(self,
@@ -70,7 +70,7 @@ class CamVid(BaseComponent):
         path_image = self.paths_image[index]
         path_mask = self.paths_masks[index]
 
-        image = self._load_image(path_image, out_channels=3)
+        image = load_image(path_image, out_channels=3)
         mask = self._load_mask(path_mask)
         return image, mask
 
