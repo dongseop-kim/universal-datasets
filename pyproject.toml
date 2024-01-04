@@ -1,3 +1,8 @@
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "DEBUG"
+addopts = "-s"
+
 [build-system]
 requires = ["poetry-core>=1.7.0"]
 build-backend = "poetry.core.masonry.api"
