@@ -27,14 +27,13 @@ dependencies = ["torch>= 1.13.0",
 Repository = "https://github.com/dongseop-kim/universal-datasets.git"
 Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 
+[tool.setuptools.packages]
+find = {}
 
-# [tool.setuptools] # 알아서 다 해줄 수 있을 때 사용
-
-
-[tool.setuptools.packages.find]
-include = ["utils"]
-
-# [tool.setuptools.packages.find]
+# tool.setuptools.packages.find]
 # where = ["univdt"]
-# include = ["components*", "utils*"]
-# namespaces = true
+
+# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#custom-discovery
+#[tool.setuptools.packages.find]
+#where = ["univdt"]
+#include = ["components*", "utils*"]
