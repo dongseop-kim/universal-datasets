@@ -51,4 +51,4 @@ jobs:
 
       - name: Sample Test
         run: |
-          poetry run pytest -v tests/test_utils.py
+          pytest -v tests/test_utils.py
