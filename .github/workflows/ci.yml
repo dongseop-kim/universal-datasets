@@ -41,9 +41,9 @@ jobs:
         run: |
           poetry install --no-root
           python3 -m pip freeze
-          python3 -c "import torch; print(torch.__version__)" # it raises error "ModuleNotFoundError: No module named 'torch'"
+          # python3 -c "import torch; print(torch.__version__)" # it raises error "ModuleNotFoundError: No module named 'torch'"
       
-      - name: 
+      - name: Install pytorch-cpu
         run: |
           python -m pip install --upgrade pip
           # Install CPU-based pytorch
