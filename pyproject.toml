@@ -4,6 +4,7 @@ log_cli_level = "DEBUG"
 addopts = "-s"
 
 
+
 # https://packaging.python.org/en/latest/guides/writing-pyproject-toml
 [build-system]
 requires = ["setuptools >= 61.0"]
@@ -26,14 +27,9 @@ dependencies = ["torch>= 1.13.0",
 [project.urls]
 Repository = "https://github.com/dongseop-kim/universal-datasets.git"
 Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
+# Homepage = "https://example.com"
+# Documentation = "https://example.org"
+# Changelog = ""
 
 [tool.setuptools.packages]
 find = {} 
-
-# tool.setuptools.packages.find]
-# where = ["univdt"]
-
-# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#custom-discovery
-#[tool.setuptools.packages.find]
-#where = ["univdt"]
-#include = ["components*", "utils*"]
