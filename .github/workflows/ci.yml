@@ -49,5 +49,6 @@ jobs:
           python3 -m pip freeze
           # python3 -c "import torch; print(torch.__version__)" # it raises error "ModuleNotFoundError: No module named 'torch'"
 
-
-# pip install torch==1.13.1+cpu torchvision==0.14.1+cpu torchaudio==0.13.1 
+      - name: Sample Test
+        run: |
+          poetry run pytest -v tests/test_utils.py
