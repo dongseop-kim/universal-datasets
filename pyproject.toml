@@ -4,6 +4,7 @@ log_cli_level = "DEBUG"
 addopts = "-s"
 
 
+
 # https://packaging.python.org/en/latest/guides/writing-pyproject-toml
 [build-system]
 requires = ["setuptools >= 61.0"]
@@ -27,14 +28,16 @@ dependencies = ["torch>= 1.13.0",
 Repository = "https://github.com/dongseop-kim/universal-datasets.git"
 Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 
+# it works
+# namespaces = false. This will prevent any folder without an __init__.py file from being scanned.
+[tool.setuptools.packages]
+find = {namespaces = false}
 
-# [tool.setuptools] # 알아서 다 해줄 수 있을 때 사용
-
-
-[tool.setuptools.packages.find]
-include = ["utils"]
+# it works too
+# [tool.setuptools.packages]
+# find = {} # becuz current my modules all have __init__.py
 
 # [tool.setuptools.packages.find]
-# where = ["univdt"]
+# where = ["src"]
+# include = ["utils*"]
 # include = ["components*", "utils*"]
-# namespaces = true
