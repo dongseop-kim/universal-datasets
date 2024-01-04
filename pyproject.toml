@@ -3,24 +3,31 @@ log_cli = true
 log_cli_level = "DEBUG"
 addopts = "-s"
 
+# https://packaging.python.org/en/latest/guides/writing-pyproject-toml
 [build-system]
-requires = ["poetry-core>=1.7.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry]
-name = "udt"
+[project]
+name = "univdt"
 version = "0.1.0"
 description = "universal-datasets"
-authors = ["dongseopkim <k_ds1028@naver.com>"]
-license = "MIT"
+authors = [{name = "Pradyun dongseopkim", email = "k_ds1028@naver.com"}]
+readme = "README.md"
 keywords = ["python", "dataset", "camvid", "voc", "publictb"]
-repository = "https://github.com/dongseop-kim/universal-datasets"
+requires-python = ">=3.9"
+dependencies = [
+    "torch>= 1.13.0",
+    "pytest",
+    "opencv-python-headless",
+]
 
+[project.urls]
+Repository = "https://github.com/dongseop-kim/universal-datasets.git"
+Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
+# Homepage = "https://example.com"
+# Documentation = "https://example.org"
+# Changelog = ""
 
-[tool.poetry.dependencies]
-python = "^3.9.0"
-torch = "^1.13.0"
-torchvision = "^0.14.1"
-
-[tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
+[tool.setuptools]
+package-dir = {"" = "univdt"}

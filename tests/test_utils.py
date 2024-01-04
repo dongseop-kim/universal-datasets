@@ -3,8 +3,8 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from udt.utils import image
-from udt.utils.logger import Logger
+from univdt.utils import image
+from univdt.utils.logger import Logger
 
 logger = Logger(__name__, 0)
 

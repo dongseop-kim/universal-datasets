@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Any, Dict, List
 
-from udt.components.base import BaseComponent
-from udt.utils.image import load_image
+from univdt.components.base import BaseComponent
+from univdt.utils.image import load_image
 
 # 'both' means both active and inactive tb
 # 2~4 are only available in tbx11k dataset
