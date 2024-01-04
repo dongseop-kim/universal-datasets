@@ -30,4 +30,5 @@ Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 # Changelog = ""
 
 [tool.setuptools]
+packages = ["univdt"]
 package-dir = {"" = "univdt"}

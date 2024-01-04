@@ -1,2 +1,0 @@
-torch>=1.13.0
-pytest

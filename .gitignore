@@ -11,6 +11,7 @@ test*.ipynb
 
 ### BUILD ###
 build/
+univdt.egg-info/
 
 ### PERSONAL ###
 user-requirements.txt
