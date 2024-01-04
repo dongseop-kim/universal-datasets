@@ -37,4 +37,5 @@ jobs:
           python3 -m pip install poetry
           poetry --version
           poetry install --no-root --no-dev
+          python3 -m pip freeze
         
