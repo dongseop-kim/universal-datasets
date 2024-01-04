@@ -3,32 +3,33 @@ log_cli = true
 log_cli_level = "DEBUG"
 addopts = "-s"
 
+
 # https://packaging.python.org/en/latest/guides/writing-pyproject-toml
 [build-system]
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
+
 [project]
 name = "univdt"
-version = "0.1.0"
+version = "0.0.1"
 description = "universal-datasets"
 authors = [{name = "Pradyun dongseopkim", email = "k_ds1028@naver.com"}]
 readme = "README.md"
 keywords = ["python", "dataset", "camvid", "voc", "publictb"]
 requires-python = ">=3.9"
-dependencies = [
-    "torch>= 1.13.0",
-    "pytest",
-    "opencv-python-headless",
-]
+dependencies = ["torch>= 1.13.0",
+                "pytest",
+                "opencv-python-headless"]
+
 
 [project.urls]
 Repository = "https://github.com/dongseop-kim/universal-datasets.git"
 Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
-# Homepage = "https://example.com"
-# Documentation = "https://example.org"
-# Changelog = ""
 
-[tool.setuptools]
-packages = ["univdt"]
-package-dir = {"" = "univdt"}
+
+
+[tool.setuptools.packages.find]
+where = ["univdt"]
+# include = ["components*"]
+# namespaces = false
