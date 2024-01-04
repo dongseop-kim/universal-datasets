@@ -31,11 +31,13 @@ jobs:
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
     
-      - name: Install poetry and dependencies
+      - name: Install poetry
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install poetry
           poetry --version
+          
+      -name: Install dependencies
+        run: |
           poetry install --no-root --no-dev
           python3 -m pip freeze
-        
