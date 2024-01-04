@@ -28,12 +28,8 @@ Repository = "https://github.com/dongseop-kim/universal-datasets.git"
 Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 
 
-# [tool.setuptools.packages]
-#find = {}  # Scanning implicit namespaces is active by default
-# OR
-# find = {namespaces = false}  # Disable implicit namespaces
 
 [tool.setuptools.packages.find]
 where = ["univdt"]
-include = ["components*", "utils*"]
-namespaces = true
+# include = ["components*", "utils*"]
+# namespaces = true
