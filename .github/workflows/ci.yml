@@ -39,7 +39,7 @@ jobs:
           
       - name: Install dependencies
         run: |
-          poetry install --no-root
+          poetry install
           python3 -m pip freeze
           # python3 -c "import torch; print(torch.__version__)" # it raises error "ModuleNotFoundError: No module named 'torch'"
       
