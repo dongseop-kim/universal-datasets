@@ -42,7 +42,7 @@ jobs:
         run: |
           # python -m pip install --upgrade pip
           # Install CPU-based pytorch
-          python3 -m pip install torch  -f https://download.pytorch.org/whl/torch/torch-1.13.1+cpu-cp39-cp39-linux_x86_64.whl
+          python3 -m pip install torch  -f https://download.pytorch.org/whl/cpu/torch-1.13.1%2Bcpu-cp39-cp39-linux_x86_64.whl#sha256=71636a5c21927236f4974d2355fb3f66a0b707c28219b0135ff65ed0f0e61287
           python3 -c "import torch; print(torch.__version__)"
 
       - name: Install dependencies
