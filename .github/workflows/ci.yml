@@ -39,5 +39,6 @@ jobs:
           
       - name: Install dependencies
         run: |
-          poetry install --no-root --no-dev
+          poetry install --no-root
           python3 -m pip freeze
+          python -c "import torch; print(torch.__version__)"
