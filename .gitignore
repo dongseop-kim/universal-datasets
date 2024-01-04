@@ -3,13 +3,14 @@
 
 ### PYTHON ###
 __pycache__
+.pytest_cache/
 
 ### JUPYTER ###
 !examples/*.ipynb
 test*.ipynb
 
 ### BUILD ###
-poetry.lock
+build/
 
 ### PERSONAL ###
 user-requirements.txt
