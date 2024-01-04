@@ -38,6 +38,6 @@ Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 # find = {} # becuz current my modules all have __init__.py
 
 [tool.setuptools.packages.find]
-where = "univdt"
+where = ["univdt"]
 include = ["utils*"]
 # include = ["components*", "utils*"]
