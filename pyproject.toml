@@ -30,6 +30,7 @@ Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 
 # it works
 #[tool.setuptools.packages]
+# namespaces = false. This will prevent any folder without an __init__.py file from being scanned.
 #find = {namespaces = false}
 
 # it works too
