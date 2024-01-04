@@ -28,8 +28,8 @@ Repository = "https://github.com/dongseop-kim/universal-datasets.git"
 Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 
 
-[tool.setuptools]
-packages = ["univdt"]
+# [tool.setuptools] # 알아서 다 해줄 수 있을 때 사용
+
 
 [tool.setuptools.packages.find]
 include = ["utils"]
