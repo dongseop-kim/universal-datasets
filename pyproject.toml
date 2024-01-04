@@ -32,4 +32,4 @@ Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 # Changelog = ""
 
 [tool.setuptools.packages]
-find = {} 
+find = {namespaces = false}
