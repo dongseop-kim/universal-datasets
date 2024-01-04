@@ -28,10 +28,13 @@ jobs:
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
       
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
+      # - name: Display Python version
+      #   run: python -c "import sys; print(sys.version)"
     
-      # uses: actions/setup-python@v3
+      - name: Install dependencies
+        run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install poetry
       
 #     - name: Install dependencies
 #       run: |
