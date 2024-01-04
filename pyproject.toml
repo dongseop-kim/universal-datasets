@@ -30,7 +30,9 @@ Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 
 [tool.setuptools]
 packages = ["univdt"]
-# package-dir = {"" = "univdt"}
+
+[tool.setuptools.packages.find]
+include = ["utils"]
 
 # [tool.setuptools.packages.find]
 # where = ["univdt"]
