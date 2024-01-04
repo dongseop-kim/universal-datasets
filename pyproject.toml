@@ -31,7 +31,7 @@ Issues = "https://github.com/dongseop-kim/universal-datasets/issues"
 [tool.setuptools]
 packages = ["univdt"]
 
-[tool.setuptools.packages.find]
-where = ["univdt"]
+# [tool.setuptools.packages.find]
+#where = ["univdt"]
 # include = ["components*", "utils*"]
 # namespaces = true
