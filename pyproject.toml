@@ -18,7 +18,8 @@ keywords = ["python", "dataset", "camvid", "voc", "publictb"]
 requires-python = ">=3.9"
 dependencies = [
     "torch>= 1.13.0",
-    "pytest"
+    "pytest",
+    "opencv-python-headless",
 ]
 
 [project.urls]
