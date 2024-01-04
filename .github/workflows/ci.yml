@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Python
+      - name: Setup Python
         # This is the version of the action for setting up Python, not the Python version.
         uses: actions/setup-python@v4
         with:
@@ -27,19 +27,12 @@ jobs:
           python-version: '3.9' # '3.x'
           cache: 'pip'  # caching pip dependencies
           # architecture: 'x64' # Optional - x64 or x86 architecture, defaults to x64
-      
-      - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-    
-      - name: Install poetry
+
+      # Install CPU-based pytorch 
+      - name: Install pytorch-cpu
         run: |
           python3 -m pip install --upgrade pip
-          
-          
-      
-      - name: Install pytorch-cpu
-        # Install CPU-based pytorch 
-        run: |
           python3 -m pip install torch==1.13.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
           python3 -c "import torch; print(torch.__version__)"
 
