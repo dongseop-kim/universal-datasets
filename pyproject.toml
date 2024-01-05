@@ -18,7 +18,7 @@ description = "universal-datasets"
 authors = [{name = "Pradyun dongseopkim", email = "k_ds1028@naver.com"}]
 readme = "README.md"
 keywords = ["python", "dataset", "camvid", "voc", "publictb"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = ["torch>= 1.13.0",
                 "pytest",
                 "opencv-python-headless"]
