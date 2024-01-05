@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Any, Dict, List
 
+import torch
+
 from univdt.components.base import BaseComponent
 from univdt.utils.image import load_image
 
@@ -44,7 +46,18 @@ class PublicTuberculosis(BaseComponent):
         self.raw_data = self._load_paths()
 
     def __getitem__(self, index):
-        pass
+        data = self.load_data(index)
+        image = data['image']
+        label = data['label']
+        if self.transform is not None:
+            transformed = self.transform(image=image)
+            image = transformed['image']
+
+        # convert image to pytorch tensor
+        image = image.transpose(2, 0, 1)
+        image = image.astype('float32') / 255.0
+        image = torch.Tensor(image)
+        return image, label
 
     def __len__(self) -> int:
         return len(self.raw_data)
