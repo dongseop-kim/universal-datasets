@@ -8,6 +8,7 @@
       - [3.3 Shenzhen](#33-shenzhen)
       - [3.4 TBX11k](#34-tbx11k)
     - [4. NIH CXR (Chest X-Ray14)](#4-nih-cxr-chest-x-ray14)
+    - [5. Cityscapes](#5-cityscapes)
 
 ---
 
@@ -71,3 +72,14 @@ You can download the dataset from the [official source][TBX11K_LINK] and the [cu
 ### [4. NIH CXR (Chest X-Ray14)][NIH]
 
 [NIH]:https://www.cc.nih.gov/drd/summers.html
+
+---
+
+### [5. Cityscapes][CITYSCAPES]
+
+Cityscapes is a large-scale dataset that focuses on semantic understanding of urban street scenes. It provides pixel-level annotations for 5,000 images in the training set, 500 images in the validation set, and 1,525 images in the test set. The dataset includes 30 classes, but only 19 classes were mainly used in the experiment. The 19 classes primarily used in the Cityscapes training dataset are as follows: **road, sidewalk, building, wall, fence, pole, traffic light, traffic sign, vegetation, terrain, sky, person, rider, car, truck, bus, train, motorcycle, and bicycle** <br>
+You can download the dataset from the [official source][CITYSCAPES] or execute [custom source](../../scripts/cityscapes.sh).
+
+[CITYSCAPES]:https://www.cityscapes-dataset.com/
+
+---
