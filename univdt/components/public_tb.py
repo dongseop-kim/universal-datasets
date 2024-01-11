@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, List
 
+import numpy as np
 import torch
 
 from univdt.components.base import BaseComponent
@@ -47,7 +48,7 @@ class PublicTuberculosis(BaseComponent):
 
     def __getitem__(self, index):
         data = self.load_data(index)
-        image = data['image']
+        image: np.ndarray = data['image']
         label = data['label']
         if self.transform is not None:
             transformed = self.transform(image=image)
