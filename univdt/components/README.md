@@ -9,6 +9,10 @@
       - [3.4 TBX11k](#34-tbx11k)
     - [4. NIH CXR (Chest X-Ray14)](#4-nih-cxr-chest-x-ray14)
     - [5. Cityscapes](#5-cityscapes)
+    - [6. COCO](#6-coco)
+    - [VinDr CXR](#vindr-cxr)
+  
+  
 
 ---
 
@@ -81,5 +85,23 @@ Cityscapes is a large-scale dataset that focuses on semantic understanding of ur
 You can download the dataset from the [official source][CITYSCAPES].
 
 [CITYSCAPES]:https://www.cityscapes-dataset.com/
+
+---
+
+### [6. COCO][COCO]
+
+COCO is a large-scale dataset that focuses on object detection, segmentation, and captioning. It provides pixel-level annotations for 118,287 images in the training set, 5,000 images in the validation set, and 40,670 images in the test set. The dataset includes 80 classes. <br>
+
+[COCO]:https://cocodataset.org/#home
+
+---
+
+### [VinDr CXR][VINDRCXR]
+
+
+
+kaggle : https://www.kaggle.com/c/vinbigdata-chest-xray-abnormalities-detection/
+
+[VINDRCXR]:https://vinlab.io/dataset/vindr-chest-x-ray.html/   
 
 ---
