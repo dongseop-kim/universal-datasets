@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Optional
 
 import numpy as np
 import torch
@@ -9,8 +9,8 @@ from univdt.utils.image import load_image
 
 # 'both' means both active and inactive tb
 # 2~4 are only available in tbx11k dataset
-_LABEL_TO_TRAINID = {'normal': 0, 'activetb': 1,
-                     'inactivetb': 2, 'both': 3, 'others': 4}
+LABEL_TO_TRAINID = {'normal': 0, 'activetb': 1,
+                    'inactivetb': 2, 'both': 3, 'others': 4}
 
 
 class PublicTuberculosis(BaseComponent):
@@ -27,29 +27,28 @@ class PublicTuberculosis(BaseComponent):
         transform : Composed transforms
         dataset : dataset name to load
     """
-    TASK = ['classification']
+    AVAILABLE_KEYS = ['age', 'gender', 'report']
 
-    def __init__(self,
-                 root_dir: str,
-                 split: str,
-                 transform=None,
-                 dataset: str = 'shenzhen'):
-        assert split in ['train', 'val', 'trainval', 'test']
-        assert dataset in ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k']
+    def __init__(self, root_dir: str, split: str,
+                 transform=None, dataset: str = 'shenzhen',
+                 additional_keys: Optional[list[str]] = None):
+        super().__init__(root_dir, split, transform, additional_keys)
+        assert split in ['train', 'val', 'trainval', 'test'], \
+            f'Invalid split: {split}, must be one of train, val, trainval, test'
+        assert dataset in ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k'], \
+            f'Invalid dataset: {dataset}, must be one of tbxpredict, shenzhen, montgomery, tbx11k'
+        assert Any([key in self.AVAILABLE_KEYS for key in self.additional_keys]), \
+            f'Invalid additional keys: {self.additional_keys}'
         self.dataset = dataset
-        # if self.dataset == 'tbx11k':
-        #     self.TASK.append('detection')
-        super().__init__(root_dir, split, transform)
-
         self.num_classes = 4  # 4 classes: normal, active, inactive, others
         self.void_class = -1  # class labeled as -1 is the 'void'
 
         self.raw_data = self._load_paths()
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> dict[str, Any]:
         data = self.load_data(index)
         image: np.ndarray = data['image']
-        label = data['label']
+        label: np.ndarray = data['label']
         if self.transform is not None:
             transformed = self.transform(image=image)
             image = transformed['image']
@@ -58,12 +57,15 @@ class PublicTuberculosis(BaseComponent):
         image = image.transpose(2, 0, 1)
         image = image.astype('float32') / 255.0
         image = torch.Tensor(image)
-        return image, label
+        output = {'image': image, 'label': label,
+                  'dataset': self.dataset, 'path': data['path']}
+        output.update({key: data[key] for key in self.additional_keys})
+        return output
 
     def __len__(self) -> int:
         return len(self.raw_data)
 
-    def load_data(self, index) -> Dict[str, Any]:
+    def load_data(self, index) -> dict[str, Any]:
         raw_data = self.raw_data[index]
 
         # load image
@@ -72,7 +74,8 @@ class PublicTuberculosis(BaseComponent):
         image = load_image(image_path, out_channels=1)  # normalized to [0, 255]
 
         # load label
-        label = _LABEL_TO_TRAINID[raw_data['label']]
+        label = LABEL_TO_TRAINID[raw_data['label']]
+        label = np.array(label, dtype=np.int64)
 
         # load etc data
         age = raw_data['age']
@@ -81,9 +84,9 @@ class PublicTuberculosis(BaseComponent):
 
         # include dataset name for dataset concatenation
         return {'image': image, 'label': label, 'age': age, 'gender': gender,
-                'report': report, 'dataset': self.dataset}
+                'report': report, 'dataset': self.dataset, 'path': image_path}
 
-    def _load_paths(self) -> List[Dict[str, Any]]:
+    def _load_paths(self) -> list[dict[str, Any]]:
         import pandas as pd
 
         # name, split, label, age, gender, report
