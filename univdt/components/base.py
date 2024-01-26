@@ -1,14 +1,18 @@
+from abc import abstractmethod
 from pathlib import Path
-from typing import List
+from typing import Any,  Optional
 
 from torch.utils.data import Dataset
 
 
 class BaseComponent(Dataset):
-    TASK: List[str] = None
-
-    def __init__(self, root_dir: str, split: str, transform=None):
+    def __init__(self, root_dir: str, split: str, transform=None,
+                 additional_keys: Optional[list[str]] = None):
         self.root_dir = Path(root_dir)
         self.split = split
         self.transform = transform
-        assert self.TASK is not None, "task must be defined"
+        self.additional_keys = additional_keys if additional_keys else []
+
+    @abstractmethod
+    def load_data(self, index) -> dict[str, Any]:
+        pass
