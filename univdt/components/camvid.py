@@ -8,31 +8,30 @@ import numpy as np
 from univdt.components.base import BaseComponent
 from univdt.utils.image import load_image
 
-_CAMVID_CLASS = namedtuple('camvid_class', ['name', 'id', 'train_id',  'color'])
-CAMVID_CLASSES = [_CAMVID_CLASS('sky', 0, 0,  (128, 128, 128)),
-                  _CAMVID_CLASS('building', 1, 1,  (128, 0, 0)),
-                  _CAMVID_CLASS('column-pole', 2, 2,  (192, 192, 128)),
-                  _CAMVID_CLASS('road', 3, 3,  (128, 64, 128)),
-                  _CAMVID_CLASS('sidewalk', 4, 4,  (0, 0, 192)),
-                  _CAMVID_CLASS('tree', 5, 5,  (128, 128, 0)),
-                  _CAMVID_CLASS('sign-symbol', 6, 6,  (192, 128, 128)),
-                  _CAMVID_CLASS('fence', 7, 7,  (64, 64, 128)),
-                  _CAMVID_CLASS('car', 8, 8,  (64, 0, 128)),
-                  _CAMVID_CLASS('pedestrian', 9, 9,  (64, 64, 0)),
-                  _CAMVID_CLASS('bicyclist', 10, 10,  (0, 128, 192)),
-                  _CAMVID_CLASS('void', 11, 255,  (0, 0, 0))]
+CAMVID_CLASS = namedtuple('camvid_class', ['name', 'id', 'train_id',  'color'])
+CAMVID_CLASSES = [CAMVID_CLASS('sky', 0, 0,  (128, 128, 128)),
+                  CAMVID_CLASS('building', 1, 1,  (128, 0, 0)),
+                  CAMVID_CLASS('column-pole', 2, 2,  (192, 192, 128)),
+                  CAMVID_CLASS('road', 3, 3,  (128, 64, 128)),
+                  CAMVID_CLASS('sidewalk', 4, 4,  (0, 0, 192)),
+                  CAMVID_CLASS('tree', 5, 5,  (128, 128, 0)),
+                  CAMVID_CLASS('sign-symbol', 6, 6,  (192, 128, 128)),
+                  CAMVID_CLASS('fence', 7, 7,  (64, 64, 128)),
+                  CAMVID_CLASS('car', 8, 8,  (64, 0, 128)),
+                  CAMVID_CLASS('pedestrian', 9, 9,  (64, 64, 0)),
+                  CAMVID_CLASS('bicyclist', 10, 10,  (0, 128, 192)),
+                  CAMVID_CLASS('void', 11, 255,  (0, 0, 0))]
 
 
 class CamVid(BaseComponent):
     """
-    CamVid dataset
+    CamVid dataset for semantic segmentation
 
     Args:
         root : root folder for dataset
         split : 'train', 'val', 'test' and 'trainval'
         transform : Composed transforms
     """
-    TASK = ['segmentation']
     COLORMAP = np.array([c.color for c in CAMVID_CLASSES], dtype=np.uint8)
 
     def __init__(self,
@@ -47,6 +46,7 @@ class CamVid(BaseComponent):
         self.paths_image, self.paths_masks = self._load_paths()
 
     def __getitem__(self, index):
+        # TODO: implement this
         pass
 
     def __len__(self) -> int:
@@ -66,13 +66,13 @@ class CamVid(BaseComponent):
         overlay = self.draw_mask(mask)
         return cv2.addWeighted(image, 0.7, overlay, 0.3, 0)
 
-    def load_data(self, index):
+    def load_data(self, index) -> dict[str, np.ndarray]:
         path_image = self.paths_image[index]
         path_mask = self.paths_masks[index]
 
         image = load_image(path_image, out_channels=3)
         mask = self._load_mask(path_mask)
-        return image, mask
+        return {'image': image, 'mask': mask, 'path': path_image}
 
     def _load_paths_by_split(self, split: str) -> Tuple[List[Path], List[Path]]:
         with open(self.root_dir / f'{split}.txt') as f:
