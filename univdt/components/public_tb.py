@@ -37,8 +37,11 @@ class PublicTuberculosis(BaseComponent):
             f'Invalid split: {split}, must be one of train, val, trainval, test'
         assert dataset in ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k'], \
             f'Invalid dataset: {dataset}, must be one of tbxpredict, shenzhen, montgomery, tbx11k'
-        assert Any([key in self.AVAILABLE_KEYS for key in self.additional_keys]), \
-            f'Invalid additional keys: {self.additional_keys}'
+
+        if self.additional_keys:
+            assert all([key in self.AVAILABLE_KEYS for key in self.additional_keys]), \
+                f'Invalid additional keys: {self.additional_keys}'
+
         self.dataset = dataset
         self.num_classes = 4  # 4 classes: normal, active, inactive, others
         self.void_class = -1  # class labeled as -1 is the 'void'
