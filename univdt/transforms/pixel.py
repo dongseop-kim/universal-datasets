@@ -1,4 +1,5 @@
 import albumentations as A
+import numpy as np
 
 
 def random_gamma(magnitude: float = 0.2, p=1.0):
@@ -91,3 +92,62 @@ def random_noise(magnitude: float = 0.2, p=1.0):
     gaussian_noise = A.GaussNoise(var_limit=(0, magnitude), p=p)
     multiplicative_noise = A.MultiplicativeNoise(multiplier=(1-magnitude, 1+magnitude), p=p)
     return A.OneOf([gaussian_noise, multiplicative_noise], p=p)
+
+
+def windowing(image: np.ndarray, use_median: bool = False, width_param: float = 4.0) -> np.ndarray:
+    """
+    Windowing function that clips the values based on the given params.
+    Args:
+        image (str): the image to do the windowing
+        use_median (bool): use median as center if True, mean otherwise
+        width_param (float): the width of the value range for windowing.
+        brightness (float) : brightness_rate. a value between 0 and 1 and indicates the amount to subtract.
+
+    Returns:
+        image that was windowed.
+    """
+    center = np.median(image) if use_median else image.mean()
+    range_width_half = (image.std() * width_param) / 2.0
+    low, high = center - range_width_half, center + range_width_half
+    return np.clip(image, low, high)
+
+
+class RandomWindowing(A.ImageOnlyTransform):
+    """
+    Apply random windowing
+    Args:
+        width_param (float): width parameter
+        width_range (float): width range. width_param - width_range/2 ~ width_param + width_range/2
+        use_median (bool): use median or not
+        always_apply (bool): always apply or not
+        p (float): probability
+    """
+
+    def __init__(self, width_param: float = 4.0, width_range: float = 1.0,  use_median: bool = True,
+                 always_apply: bool = False, p: float = 0.5):
+        super().__init__(always_apply, p)
+        self.use_median = use_median
+        self.width_param = width_param
+        self.width_range = width_range
+
+    # TODO: width_param -> update_params에서 random하게 설정하도록 변경
+    def apply(self, img: np.ndarray, **params) -> np.ndarray:
+        width_param = (self.width_param - (self.width_range/2)) + (np.random.rand(1) * (self.width_range))
+        return windowing(img, use_median=self.use_median, width_param=width_param).astype(np.uint8)
+
+    def get_transform_init_args_names(self) -> tuple[str, ...]:
+        return ('width_param', 'width_range', 'use_median',)
+
+
+def random_windowing(magnitude: float = 0.2, p=1.0):
+    """
+    Randomly change the windowing of the input image.
+
+    Args:
+        magnitude (float): 
+        p (float): probability of applying the transform. Default: 1.0.
+    """
+    # The range of magnitude is (0.0~ 1.0]
+    # when magnitude is 1.0, width_range
+    assert 0.0 < magnitude <= 1.0
+    return RandomWindowing(width_param=4.0, width_range=magnitude*2, use_median=True, p=p)
