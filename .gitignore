@@ -18,3 +18,4 @@ univdt.egg-info/
 user-requirements.txt
 getdatasets/
 tmp/
+test_components.py
