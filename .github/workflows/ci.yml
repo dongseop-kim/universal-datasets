@@ -45,6 +45,7 @@ jobs:
       - name: utils test
         run: |
           pytest -v tests/test_utils.py
+      
       - name: transforms test
         run: |
           pytest -v tests/test_transforms.py
