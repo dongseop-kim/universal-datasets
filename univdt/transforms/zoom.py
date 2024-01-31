@@ -9,9 +9,9 @@ import numpy as np
 from albumentations.core.transforms_interface import DualTransform
 
 
-def random_zoom(height: int, width: int, scale: float | tuple[float, float] = 0.1,
+def random_zoom(scale: float | tuple[float, float] = 0.1,
                 pad_val: int = 0, pad_val_mask: int = 255, p=1.0):
-    return RandomZoom(scale, height, width, pad_val, pad_val_mask, p=p)
+    return RandomZoom(scale, pad_val, pad_val_mask, p=p)
 
 
 class RandomZoom(DualTransform):
