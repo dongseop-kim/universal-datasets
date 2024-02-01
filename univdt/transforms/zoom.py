@@ -32,7 +32,7 @@ class RandomZoom(DualTransform):
                  pad_val: int = 0, pad_val_mask: int = 255,
                  always_apply=False, p=1.0):
         super().__init__(always_apply, p)
-        self.scale = scale if isinstance(scale, tuple) else (-scale, scale)
+        self.scale = scale if isinstance(scale, tuple) else (1-scale, 1+scale)
         self.pad_val = pad_val
         self.pad_val_mask = pad_val_mask
 
