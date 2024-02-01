@@ -88,7 +88,7 @@ class PublicTuberculosis(BaseComponent):
 
         # include dataset name for dataset concatenation
         return {'image': image, 'label': label, 'age': age, 'gender': gender,
-                'report': report, 'dataset': self.dataset, 'path': image_path}
+                'report': report, 'dataset': self.dataset, 'path': str(image_path)}
 
     def _load_paths(self) -> list[dict[str, Any]]:
         import pandas as pd

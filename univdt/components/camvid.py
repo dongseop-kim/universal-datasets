@@ -72,7 +72,7 @@ class CamVid(BaseComponent):
 
         image = load_image(path_image, out_channels=3)
         mask = self._load_mask(path_mask)
-        return {'image': image, 'mask': mask, 'path': path_image}
+        return {'image': image, 'mask': mask, 'path': str(path_image)}
 
     def _load_paths_by_split(self, split: str) -> Tuple[List[Path], List[Path]]:
         with open(self.root_dir / f'{split}.txt') as f:

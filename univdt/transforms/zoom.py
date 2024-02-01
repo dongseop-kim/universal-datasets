@@ -71,9 +71,7 @@ class RandomZoom(DualTransform):
         # resize image with scale factor
         scale, target_h, target_w = params['scale'], params['target_h'], params['target_w']
         img = gf.resize(img, target_h, target_w, interpolation)
-        print(scale)
         if scale < 1.0:
-            print(params)
             # pad image for zoom out
             img = gf.pad_with_params(img=img,
                                      h_pad_top=params['h_pad_top'], h_pad_bottom=params['h_pad_bottom'],
