@@ -9,9 +9,9 @@ import numpy as np
 from albumentations.core.transforms_interface import DualTransform
 
 
-def random_zoom(height: int, width: int, scale: float | tuple[float, float] = 0.1,
+def random_zoom(scale: float | tuple[float, float] = 0.1,
                 pad_val: int = 0, pad_val_mask: int = 255, p=1.0):
-    return RandomZoom(scale, height, width, pad_val, pad_val_mask, p=p)
+    return RandomZoom(scale, pad_val, pad_val_mask, p=p)
 
 
 class RandomZoom(DualTransform):
@@ -32,7 +32,7 @@ class RandomZoom(DualTransform):
                  pad_val: int = 0, pad_val_mask: int = 255,
                  always_apply=False, p=1.0):
         super().__init__(always_apply, p)
-        self.scale = scale if isinstance(scale, tuple) else (-scale, scale)
+        self.scale = scale if isinstance(scale, tuple) else (1-scale, 1+scale)
         self.pad_val = pad_val
         self.pad_val_mask = pad_val_mask
 
@@ -71,9 +71,7 @@ class RandomZoom(DualTransform):
         # resize image with scale factor
         scale, target_h, target_w = params['scale'], params['target_h'], params['target_w']
         img = gf.resize(img, target_h, target_w, interpolation)
-        print(scale)
         if scale < 1.0:
-            print(params)
             # pad image for zoom out
             img = gf.pad_with_params(img=img,
                                      h_pad_top=params['h_pad_top'], h_pad_bottom=params['h_pad_bottom'],

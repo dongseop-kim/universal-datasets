@@ -27,6 +27,7 @@ class PublicTuberculosis(BaseComponent):
         transform : Composed transforms
         dataset : dataset name to load
     """
+    AVAILABLE_DATASETS = ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k']
     AVAILABLE_KEYS = ['age', 'gender', 'report']
 
     def __init__(self, root_dir: str, split: str,
@@ -35,10 +36,13 @@ class PublicTuberculosis(BaseComponent):
         super().__init__(root_dir, split, transform, additional_keys)
         assert split in ['train', 'val', 'trainval', 'test'], \
             f'Invalid split: {split}, must be one of train, val, trainval, test'
-        assert dataset in ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k'], \
+        assert dataset in self.AVAILABLE_DATASETS, \
             f'Invalid dataset: {dataset}, must be one of tbxpredict, shenzhen, montgomery, tbx11k'
-        assert Any([key in self.AVAILABLE_KEYS for key in self.additional_keys]), \
-            f'Invalid additional keys: {self.additional_keys}'
+
+        if self.additional_keys:
+            assert all([key in self.AVAILABLE_KEYS for key in self.additional_keys]), \
+                f'Invalid additional keys: {self.additional_keys}'
+
         self.dataset = dataset
         self.num_classes = 4  # 4 classes: normal, active, inactive, others
         self.void_class = -1  # class labeled as -1 is the 'void'
@@ -84,7 +88,7 @@ class PublicTuberculosis(BaseComponent):
 
         # include dataset name for dataset concatenation
         return {'image': image, 'label': label, 'age': age, 'gender': gender,
-                'report': report, 'dataset': self.dataset, 'path': image_path}
+                'report': report, 'dataset': self.dataset, 'path': str(image_path)}
 
     def _load_paths(self) -> list[dict[str, Any]]:
         import pandas as pd

@@ -12,6 +12,7 @@ class BaseComponent(Dataset):
         self.split = split
         self.transform = transform
         self.additional_keys = additional_keys if additional_keys else []
+        self.collate_fn = None
 
     @abstractmethod
     def load_data(self, index) -> dict[str, Any]:
