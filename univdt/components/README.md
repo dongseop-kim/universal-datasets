@@ -8,6 +8,7 @@
       - [3.3 Shenzhen](#33-shenzhen)
       - [3.4 TBX11k](#34-tbx11k)
     - [4. NIH CXR (Chest X-Ray14)](#4-nih-cxr-chest-x-ray14)
+  - [NIH\_LINK2:https://nihcc.app.box.com/v/ChestXray-NIHCC](#nih_link2httpsnihccappboxcomvchestxray-nihcc)
     - [5. Cityscapes](#5-cityscapes)
     - [6. COCO](#6-coco)
     - [VinDr CXR](#vindr-cxr)
@@ -75,8 +76,12 @@ You can download the dataset from the [official source][TBX11K_LINK] and the [cu
 
 ### [4. NIH CXR (Chest X-Ray14)][NIH]
 
-[NIH]:https://www.cc.nih.gov/drd/summers.html
+The NIH CXR (Chest X-Ray14) dataset is a widely used collection for chest X-ray images, introduced by the National Institutes of Health (NIH). It comprises a total of 112,120 frontal-view X-ray images from 30,805 unique patients, including image-level labels for 14 different pathologies. The dataset is specifically designed for various research purposes, including the development and evaluation of machine learning algorithms for chest X-ray interpretation.<br>
+You can download the dataset from the [official source][NIH_LINK] and the [custom source][NIH_LINK2]. The images in the custom source have been resized to 1024x1024 and normalized to the range of 0 to 255 from the original.
 
+[NIH]:https://www.cc.nih.gov/drd/summers.html
+[NIH_LINK]:https://nihcc.app.box.com/v/ChestXray-NIHCC
+[NIH_LINK2]:https://nihcc.app.box.com/v/ChestXray-NIHCC
 ---
 
 ### [5. Cityscapes][CITYSCAPES]
