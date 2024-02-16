@@ -38,8 +38,8 @@ class CamVid(BaseComponent):
                  root_dir: str,
                  split: str,
                  transform=None):
-        assert split in ['train', 'val', 'trainval', 'test']
         super().__init__(root_dir, split, transform)
+        self.check_split(['train', 'val', 'trainval', 'test'])
 
         self.num_classes = 11
         self.void_class = 11  # class labeled as 11 is the 'void'

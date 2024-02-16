@@ -13,7 +13,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "univdt"
-version = "0.0.1"
+version = "0.0.2"
 description = "universal-datasets"
 authors = [{name = "Pradyun dongseopkim", email = "k_ds1028@naver.com"}]
 readme = "README.md"
