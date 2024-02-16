@@ -17,3 +17,6 @@ class BaseComponent(Dataset):
     @abstractmethod
     def load_data(self, index) -> dict[str, Any]:
         pass
+
+    def check_split(self, split: list[str]) -> bool:
+        assert self.split in split, f'Invalid split: {self.split}, must be one of {split}'

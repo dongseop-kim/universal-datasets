@@ -34,8 +34,7 @@ class PublicTuberculosis(BaseComponent):
                  transform=None, dataset: str = 'shenzhen',
                  additional_keys: Optional[list[str]] = None):
         super().__init__(root_dir, split, transform, additional_keys)
-        assert split in ['train', 'val', 'trainval', 'test'], \
-            f'Invalid split: {split}, must be one of train, val, trainval, test'
+        self.check_split(['train', 'val', 'trainval', 'test'])
         assert dataset in self.AVAILABLE_DATASETS, \
             f'Invalid dataset: {dataset}, must be one of tbxpredict, shenzhen, montgomery, tbx11k'
 
@@ -92,11 +91,8 @@ class PublicTuberculosis(BaseComponent):
 
     def _load_paths(self) -> list[dict[str, Any]]:
         import pandas as pd
-
         # name, split, label, age, gender, report
         df = pd.read_csv(Path(self.root_dir) / f'{self.dataset}.csv')
-        df = df[df['split'] == self.split] if self.split != 'trainval' \
-            else df[df['split'] == 'train'] + df[df['split'] == 'val']
-
-        output = [dict(row) for _, row in df.iterrows()]
-        return output
+        df = df[df['split'].isin([self.split])] if self.split != 'trainval' \
+            else df[df['split'].isin(['train', 'val'])]
+        return [dict(row) for _, row in df.iterrows()]
