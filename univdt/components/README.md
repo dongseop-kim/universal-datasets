@@ -80,7 +80,7 @@ You can download the dataset from the [official source][NIH_LINK] and the [custo
 
 [NIH]:https://www.cc.nih.gov/drd/summers.html
 [NIH_LINK]:https://nihcc.app.box.com/v/ChestXray-NIHCC
-[NIH_LINK2]:https://nihcc.app.box.com/v/ChestXray-NIHCC
+[NIH_LINK2]:https://drive.google.com/file/d/11YNGiwTkDASqEK0t6amGmJu-X0wp3evL/view?usp=drive_link
 
 ---
 
