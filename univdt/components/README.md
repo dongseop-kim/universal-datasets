@@ -8,7 +8,6 @@
       - [3.3 Shenzhen](#33-shenzhen)
       - [3.4 TBX11k](#34-tbx11k)
     - [4. NIH CXR (Chest X-Ray14)](#4-nih-cxr-chest-x-ray14)
-  - [NIH\_LINK2:https://nihcc.app.box.com/v/ChestXray-NIHCC](#nih_link2httpsnihccappboxcomvchestxray-nihcc)
     - [5. Cityscapes](#5-cityscapes)
     - [6. COCO](#6-coco)
     - [VinDr CXR](#vindr-cxr)
@@ -82,6 +81,7 @@ You can download the dataset from the [official source][NIH_LINK] and the [custo
 [NIH]:https://www.cc.nih.gov/drd/summers.html
 [NIH_LINK]:https://nihcc.app.box.com/v/ChestXray-NIHCC
 [NIH_LINK2]:https://nihcc.app.box.com/v/ChestXray-NIHCC
+
 ---
 
 ### [5. Cityscapes][CITYSCAPES]
