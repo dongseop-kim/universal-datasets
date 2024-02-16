@@ -77,7 +77,7 @@ class PublicTuberculosis(BaseComponent):
         image = load_image(image_path, out_channels=1)  # normalized to [0, 255]
 
         # load label
-        label = LABEL_TO_TRAINID[raw_data['label']]
+        label = LABEL_TO_TRAINID[raw_data['label']] if raw_data['label'] != -1 else self.void_class
         label = np.array(label, dtype=np.int64)
 
         # load etc data
