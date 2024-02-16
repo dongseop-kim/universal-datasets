@@ -95,4 +95,9 @@ class PublicTuberculosis(BaseComponent):
         df = pd.read_csv(Path(self.root_dir) / f'{self.dataset}.csv')
         df = df[df['split'].isin([self.split])] if self.split != 'trainval' \
             else df[df['split'].isin(['train', 'val'])]
+        if self.split == 'test':
+            # all df['label'] are -1 in test split
+            df['label'] = -1
+            df['report'] = ''
+
         return [dict(row) for _, row in df.iterrows()]
