@@ -77,7 +77,7 @@ class PublicTuberculosis(BaseComponent):
         image = load_image(image_path, out_channels=1)  # normalized to [0, 255]
 
         # load label
-        label = LABEL_TO_TRAINID[raw_data['label']] if raw_data['label'] != -1 else self.void_class
+        label = LABEL_TO_TRAINID[raw_data['label']] if raw_data['label'] else self.void_class
         label = np.array(label, dtype=np.int64)
 
         # load etc data
@@ -95,9 +95,4 @@ class PublicTuberculosis(BaseComponent):
         df = pd.read_csv(Path(self.root_dir) / f'{self.dataset}.csv')
         df = df[df['split'].isin([self.split])] if self.split != 'trainval' \
             else df[df['split'].isin(['train', 'val'])]
-        if self.split == 'test':
-            # all df['label'] are -1 in test split
-            df['label'] = -1
-            df['report'] = ''
-
         return [dict(row) for _, row in df.iterrows()]
