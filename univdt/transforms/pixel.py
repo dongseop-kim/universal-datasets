@@ -1,3 +1,5 @@
+import random
+
 import albumentations as A
 import numpy as np
 
@@ -151,3 +153,48 @@ def random_windowing(magnitude: float = 0.2, p=1.0):
     # when magnitude is 1.0, width_range
     assert 0.0 < magnitude <= 1.0
     return RandomWindowing(width_param=4.0, width_range=magnitude*2, use_median=True, p=p)
+
+
+def random_compression(magnitude: float = 0.2, p=1.0):
+    """
+    Randomly compress the input image.
+
+    Args:
+        magnitude (float): maximum change of compression. Default: 0.2. The range of magnitude is (0.0~ 1.0]
+        p (float): probability of applying the transform. Default: 1.0.
+    """
+    # set compression limit to (1-m, 1+m). max compression limit is (0, 2).
+    # default compression limit is (0.8, 1.2) with 0.2 magnitude.
+    assert 0.0 < magnitude <= 1.0
+    # compression_types = [A.ImageCompression.ImageCompressionType.JPEG, A.ImageCompression.ImageCompressionType.WEBP]
+    # compression_type = random.choice(compression_types)
+    magnitude = min(magnitude, 1.0) * 100
+    compression_lower = max(1, 100 - magnitude)
+    return A.ImageCompression(quality_lower=compression_lower, quality_upper=100,
+                              compression_type=A.ImageCompression.ImageCompressionType.JPEG, p=p)
+
+
+def random_hist_equal(magnitude: float = 0.2, p=1.0):
+    """
+    Randomly apply histogram equalization to the input image.
+
+    Args:
+        magnitude (float): None
+        p (float): probability of applying the transform. Default: 1.0.
+    """
+    t1 = A.Equalize(mode='cv')
+    t2 = A.Equalize(mode='pil')
+    return A.OneOf([t1, t2], p=p)
+
+
+def random_clahe(magnitude: float = 0.2, p=1.0):
+    """
+    Randomly apply CLAHE to the input image.
+
+    Args:
+        magnitude (float): None
+        p (float): probability of applying the transform. Default: 1.0.
+    """
+    tile_grid_size = (8, 8)
+    clip_limit = 2.0 + magnitude * 10
+    return A.CLAHE(clip_limit=(1, clip_limit), tile_grid_size=tile_grid_size, p=p)
