@@ -18,7 +18,8 @@ The following datasets are available.
 7. [VinDr CXR](./univdt/components/README.md#7-vinbigvinbig)
 
 ## Installation
-TBU
+
+    python3 -m pip install git+https://github.com/dongseop-kim/universal-datasets.git
 
 ## Usage
 TBU
