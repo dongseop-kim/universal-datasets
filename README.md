@@ -1,8 +1,8 @@
 # universal-datasets
 
-데이터 쓰기 편할라고 만든 리포입니다.   
+공부한거 써먹을 겸 데이터 쓰기 편할라고 만든 리포입니다.   
 
-This repository is created to provide easy access to various public datasets. These datasets can be easily loaded and utilized for different machine learning and computer vision tasks.
+This repository is created to provide easy access to various public datasets. These datasets can be easily accessed and utilized for various machine learning and computer vision tasks.
 
 
 ## Available Datasets

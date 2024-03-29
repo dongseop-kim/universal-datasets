@@ -23,7 +23,13 @@ You can download the dataset from the [official source][CAMVID] or execute [cust
 ---
 
 ### [2. PASCAL VOC][VOC]
-TBU
+
+<br>
+
+**TBU**
+
+<br>
+
 <!-- PASCAL VOC Dataset은 20개의 클래스로 구성되어있으며, 2007년부터 2012년까지의 데이터셋이 존재한다. 07년도까지는 testset anootation이 공개되었지만 이후로는 공개되지 않았다. -->
 You can download the dataset from the [official source][VOC] or execute [custom source](../../scripts/pascal_voc.sh).
 
@@ -74,7 +80,7 @@ The NIH CXR (Chest X-Ray14) dataset is a widely used collection for chest X-ray 
 You can download the dataset from the [official source][NIH_LINK] and the [custom source][NIH_LINK2]. The images in the custom source have been resized to 1024x1024 and normalized to the range of 0 to 255 from the original.
 
 <details>
-  <summary>클릭하여 펼치기</summary>
+  <summary>Click to expand</summary>
     tbu
 </details>
 
