@@ -8,12 +8,7 @@
       - [3.3 Shenzhen](#33-shenzhen)
       - [3.4 TBX11k](#34-tbx11k)
     - [4. NIH CXR (Chest X-Ray14)](#4-nih-cxr-chest-x-ray14)
-    - [5. Cityscapes](#5-cityscapes)
-    - [6. COCO](#6-coco)
-    - [VinDr CXR](#vindr-cxr)
   
-  
-
 ---
 
 
@@ -78,12 +73,17 @@ You can download the dataset from the [official source][TBX11K_LINK] and the [cu
 The NIH CXR (Chest X-Ray14) dataset is a widely used collection for chest X-ray images, introduced by the National Institutes of Health (NIH). It comprises a total of 112,120 frontal-view X-ray images from 30,805 unique patients, including image-level labels for 14 different pathologies. The dataset is specifically designed for various research purposes, including the development and evaluation of machine learning algorithms for chest X-ray interpretation.<br>
 You can download the dataset from the [official source][NIH_LINK] and the [custom source][NIH_LINK2]. The images in the custom source have been resized to 1024x1024 and normalized to the range of 0 to 255 from the original.
 
+<details>
+  <summary>클릭하여 펼치기</summary>
+    tbu
+</details>
+
 [NIH]:https://www.cc.nih.gov/drd/summers.html
 [NIH_LINK]:https://nihcc.app.box.com/v/ChestXray-NIHCC
 [NIH_LINK2]:https://drive.google.com/file/d/11YNGiwTkDASqEK0t6amGmJu-X0wp3evL/view?usp=drive_link
 
 ---
-
+<!-- 
 ### [5. Cityscapes][CITYSCAPES]
 
 Cityscapes is a large-scale dataset that focuses on semantic understanding of urban street scenes. It provides pixel-level annotations for 5,000 images in the training set, 500 images in the validation set, and 1,525 images in the test set. The dataset includes 30 classes, but only 19 classes were mainly used in the experiment. The 19 classes primarily used in the Cityscapes training dataset are as follows: **road, sidewalk, building, wall, fence, pole, traffic light, traffic sign, vegetation, terrain, sky, person, rider, car, truck, bus, train, motorcycle, and bicycle** <br>
@@ -109,4 +109,4 @@ kaggle : https://www.kaggle.com/c/vinbigdata-chest-xray-abnormalities-detection/
 
 [VINDRCXR]:https://vinlab.io/dataset/vindr-chest-x-ray.html/   
 
----
+--- -->
