@@ -43,7 +43,7 @@ class CamVid(BaseComponent):
         self.paths_image, self.paths_masks = self._load_paths()
 
     def __getitem__(self, index):
-        # TODO: implement this
+        # TODO: implement thissssss
         pass
 
     def __len__(self) -> int:
