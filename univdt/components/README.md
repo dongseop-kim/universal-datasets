@@ -23,24 +23,20 @@ You can download the dataset from the [official source][CAMVID] or execute [cust
 ---
 
 ### [2. PASCAL VOC][VOC]
-
-<br>
-
-**TBU**
-
-<br>
-
-<!-- PASCAL VOC Dataset은 20개의 클래스로 구성되어있으며, 2007년부터 2012년까지의 데이터셋이 존재한다. 07년도까지는 testset anootation이 공개되었지만 이후로는 공개되지 않았다. -->
+PASCAL VOC (Visual Object Classes) dataset is one of the widely used datasets for tasks like object recognition and object detection in the field of computer vision. The dataset consists of a total of 20 object classes. For semantic segmentation, the dataset is divided into train, val, and test sets, consisting of 1464, 1449, and 1456 images respectively. Labels for the test set are not publicly available, but evaluation can be performed using the [test server][VOC_EVALUATION_SERVER]. Further details can be found in the [official documentation][VOC_DOC].  <br>
 You can download the dataset from the [official source][VOC] or execute [custom source](../../scripts/pascal_voc.sh).
+
+**Currently, the dataset is only supported for the semantic segmentation task in this repository.**
 
 [VOC]:http://host.robots.ox.ac.uk/pascal/VOC/
 [VOC_LINK]:https://drive.google.com/file/d/15e7J7bLBosM8Aqb6LtkbD7gQFzbZ9TbY/view?usp=sharing
-
+[VOC_EVALUATION_SERVER]:http://host.robots.ox.ac.uk/pascal/VOC/
+[VOC_DOC]:http://host.robots.ox.ac.uk/pascal/VOC/voc2012/devkit_doc.pdf
 --- 
 
 ### 3. Public Tuberculosis
 #### [3.1 TB-Predict][DADB]
-The **TB-Predict** includes two tuberculosis datasets, namely **DADB**. These datasets were acquired from two distinct X-ray machines located at the National Institute of Tuberculosis and Respiratory Diseases in New Delhi. DA comprises 104 images in the training set and 52 images in the test set, while DB consists of 100 training images and 50 test images. **However, currently, 28 out of the 50 training images in DB-training are unavailable. Therefore, in this paper, the remaining 22 images from DB-train are utilized.** <br>
+The **TB-Predict** includes two tuberculosis datasets, namely **DADB**. These datasets were acquired from two distinct X-ray machines located at the National Institute of Tuberculosis and Respiratory Diseases in New Delhi. DA comprises 104 images in the training set and 52 images in the test set, while DB consists of 100 training images and 50 test images. **However, currently, 28 out of the 50 training images in DB-training are unavailable. Therefore, in this paper, the remaining 22 images from DB-train are utilized.** This dataset does not have a separate validation set, so it is manually constructed. <br>
 You can download the dataset from the [official source][DADB] and the [custom source][DADB_LINK]. The images in the custom source have been resized to 1024x1024 and normalized to the range of 0 to 255 from the original. This custom source includes data split information.
 
 [DADB]:https://sourceforge.net/projects/tbxpredict/
@@ -50,6 +46,11 @@ You can download the dataset from the [official source][DADB] and the [custom so
 The **Montgomery** dataset were acquired in collaboration with The Department of Health and Human Services of Montgomery County, MD, USA.  Montgomery consists of a **total of 138 images, with 58 images related to tuberculosis (tb) and 80 images** related to non-tuberculosis (non-tb). The dataset includes additional information such as image-level annotation, gender, age, and report. The data split is not included, so it is constructed manually.<br>
 You can download the dataset from the [official source][MONTGOMERY_LINK1] and the [custom source][MONTGOMERY_LINK2]. The images in the custom source have been resized to 1024x1024 and normalized to the range of 0 to 255 from the original. This custom source includes data split information.
 
+<details>
+  <summary>Data Split Details</summary>
+    tbu
+</details>
+
 [MONTGOMERY]:https://openi.nlm.nih.gov/faq#collection
 [MONTGOMERY_LINK1]:https://openi.nlm.nih.gov/imgs/collections/NLM-MontgomeryCXRSet.zip
 [MONTGOMERY_LINK2]:https://drive.google.com/file/d/1VsDzFxXASNl_J0DKksQgpusxOfbQ4iR1/view?usp=drive_link
@@ -57,6 +58,11 @@ You can download the dataset from the [official source][MONTGOMERY_LINK1] and th
 #### [3.3 Shenzhen][SHENZHEN]
 The **Shenzhen** dataset was collected at Shenzhen No.3 People’s Hospital, Guangdong providence, China. The Shenzhen dataset comprises a total of 662 images, with 336 images related to TB and 326 images related to Non-TB. The dataset includes additional information such as image-level annotation, gender, age, and report. The data split is not included, so it is constructed manually.<br>
 You can download the dataset from the [official source][SHENZHEN_LINK1] and the [custom source][SHENZHEN_LINK2]. The images in the custom source have been resized to 1024x1024 and normalized to the range of 0 to 255 from the original. This custom source includes data split information.
+
+<details>
+  <summary>Data Split Details</summary>
+    tbu
+</details>
 
 [SHENZHEN]:https://openi.nlm.nih.gov/faq#collection
 [SHENZHEN_LINK1]:https://openi.nlm.nih.gov/imgs/collections/ChinaSet_AllFiles.zip

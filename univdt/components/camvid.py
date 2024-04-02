@@ -34,10 +34,7 @@ class CamVid(BaseComponent):
     """
     COLORMAP = np.array([c.color for c in CAMVID_CLASSES], dtype=np.uint8)
 
-    def __init__(self,
-                 root_dir: str,
-                 split: str,
-                 transform=None):
+    def __init__(self, root_dir: str, split: str, transform=None):
         super().__init__(root_dir, split, transform)
         self.check_split(['train', 'val', 'trainval', 'test'])
 
