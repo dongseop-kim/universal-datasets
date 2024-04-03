@@ -45,21 +45,18 @@ class PascalVOC(BaseComponent):
         transform : Composed transforms
     """
     COLORMAP = np.array([c.color for c in VOC_CLASSES], dtype=np.uint8)
+    _AVAILABLE_SPLITS = ['train', 'val', 'trainval', 'test']
 
     def __init__(self, root_dir: str, split: str, transform=None):
         super().__init__(root_dir, split, transform)
-        self.check_split(['train', 'val', 'trainval', 'test'])
 
         self.num_classes = 20  # excluding background
         self.void_class = 255
 
         self.paths: list[tuple[str, str]] = self._load_paths()
 
-    def __getitem__(self, index: int):
-        """
-        Load and transform the data at the given index for training or validation.
-        """
-        data: dict[str, Any] = self.load_data(index)
+    def __getitem__(self, index: int) -> dict[str, Any]:
+        data: dict[str, Any] = self._load_data(index)
         image: np.ndarray = data['image']
         mask: Image.Image = data['mask']
         mask: np.ndarray = self._mask_to_array(mask)  # convert to numpy array mapped to train_id
@@ -94,14 +91,11 @@ class PascalVOC(BaseComponent):
         Convert the mask to numpy array and map the class ids to train ids.
         """
         mask = np.array(mask).astype(np.uint8)
-        mask[mask == 255] = 0
+        mask[mask == self.void_class] = 0
         mask -= 1
         return mask
 
-    def load_data(self, index: int) -> dict[str, Any]:
-        '''
-        Load raw image and raw mask data from the given index.
-        '''
+    def _load_data(self, index: int) -> dict[str, Any]:
         # Get the paths of the image and mask.
         path_image, path_mask = self.paths[index]
 

@@ -1,6 +1,6 @@
 from collections import namedtuple
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import Any, List, Tuple
 
 import cv2
 import numpy as np
@@ -33,65 +33,65 @@ class CamVid(BaseComponent):
         transform : Composed transforms
     """
     COLORMAP = np.array([c.color for c in CAMVID_CLASSES], dtype=np.uint8)
+    _AVAILABLE_SPLITS = ['train', 'val', 'trainval', 'test']
 
     def __init__(self, root_dir: str, split: str, transform=None):
         super().__init__(root_dir, split, transform)
-        self.check_split(['train', 'val', 'trainval', 'test'])
 
         self.num_classes = 11
-        self.void_class = 11  # class labeled as 11 is the 'void'
-        self.paths_image, self.paths_masks = self._load_paths()
+        self.void_class = 255  # class labeled as 11 is the 'void'
 
-    def __getitem__(self, index):
-        # TODO: implement this
-        pass
+        self.paths: list[tuple[str, str]] = self._load_paths()
+
+    def __getitem__(self, index: int) -> dict[str, Any]:
+        data: dict[str, Any] = self._load_data(index)
+        image: np.ndarray = data['image']
+        mask: np.ndarray = self._mask_to_array(data['mask'])
+        if self.transform is not None:
+            transformed = self.transform(image=image, mask=mask)
+            image = transformed['image']
+            mask = transformed['mask']
+        return {'image': image, 'mask': mask, 'path': data['path']}
 
     def __len__(self) -> int:
-        return len(self.paths_image)
+        return len(self.paths)
 
-    def _load_mask(self, path_mask: Union[Path, str]) -> np.ndarray:
-        mask: np.ndarray = cv2.imread(str(path_mask), cv2.IMREAD_UNCHANGED)
-        mask = mask.astype(np.uint8)
-        mask[mask == self.void_class] = 255  # set void class to 255
+    def _mask_to_array(self, mask: np.ndarray) -> np.ndarray:
+        mask[mask == 11] = self.void_class  # set void class to 255
         return mask
 
-    def draw_mask(self, mask: np.ndarray) -> np.ndarray:
-        mask[mask == 255] = self.void_class
-        return self.COLORMAP[mask]
-
-    def overlay_mask(self, image: np.ndarray, mask: np.ndarray) -> np.ndarray:
-        overlay = self.draw_mask(mask)
-        return cv2.addWeighted(image, 0.7, overlay, 0.3, 0)
-
-    def load_data(self, index) -> dict[str, np.ndarray]:
-        path_image = self.paths_image[index]
-        path_mask = self.paths_masks[index]
-
+    def _load_data(self, index: int) -> dict[str, Any]:
+        path_image, path_mask = self.paths[index]
         image = load_image(path_image, out_channels=3)
-        mask = self._load_mask(path_mask)
-        return {'image': image, 'mask': mask, 'path': str(path_image)}
+        mask: np.ndarray = cv2.imread(path_mask, cv2.IMREAD_UNCHANGED).astype(np.uint8)
+        return {'image': image, 'mask': mask, 'path': path_image}
 
-    def _load_paths_by_split(self, split: str) -> Tuple[List[Path], List[Path]]:
-        with open(self.root_dir / f'{split}.txt') as f:
-            data = [line.strip().split(" ") for line in f]
-        paths_image = [self.root_dir / line[0] for line in data]
-        paths_masks = [self.root_dir / line[1] for line in data]
-        return paths_image, paths_masks
+    def _load_paths(self) -> list[tuple[str, str]]:
 
-    def _load_paths(self) -> Tuple[List[Path], List[Path]]:
-        if self.split in ['train', 'val', 'test']:
-            paths_image, paths_masks = self._load_paths_by_split(self.split)
-        elif self.split == 'trainval':
-            paths_image, paths_masks = self._load_paths_by_split('train')
-            paths_image_val, paths_masks_val = self._load_paths_by_split('val')
-            paths_image.extend(paths_image_val)
-            paths_masks.extend(paths_masks_val)
-        # sort
-        paths_image = sorted(paths_image)
-        paths_masks = sorted(paths_masks)
+        def load_paths_by_split(split: str) -> Tuple[List[Path], List[Path]]:
+            with open(Path(self.root_dir) / f'{split}.txt') as f:
+                data = [line.strip().split(" ") for line in f]
+            paths_image = [Path(self.root_dir) / line[0] for line in data]
+            paths_masks = [Path(self.root_dir) / line[1] for line in data]
+            return paths_image, paths_masks
+
+        if self.split == 'trainval':
+            paths_image, paths_masks = [], []
+            for split in ['train', 'val']:
+                split_image, split_masks = load_paths_by_split(split)
+                paths_image += split_image
+                paths_masks += split_masks
+        else:
+            paths_image, paths_masks = load_paths_by_split(self.split)
+
         # check
         assert len(paths_image) == len(paths_masks)
         assert any([p.exists() for p in paths_image])
         assert any([p.exists() for p in paths_masks])
-        assert any([p1.stem == p2.stem for p1, p2 in zip(paths_image, paths_masks)])
-        return paths_image, paths_masks
+        assert any(p1.stem == p2.stem for p1, p2 in zip(paths_image, paths_masks))
+
+        # sort and convert paths to strings
+        paths_image = sorted(map(str, paths_image))
+        paths_masks = sorted(map(str, paths_masks))
+
+        return list(zip(paths_image, paths_masks))
