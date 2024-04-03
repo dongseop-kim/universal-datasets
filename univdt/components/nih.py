@@ -34,21 +34,21 @@ class NIH(BaseComponent):
 
     """
 
-    AVAILABLE_KEYS = ['age', 'gender', 'view_position', 'patient_id', 'follow_up']
+    _AVAILABLE_KEYS = ['age', 'gender', 'view_position', 'patient_id', 'follow_up']
 
     def __init__(self, root_dir: str, split: str, transform=None,
                  additional_keys: list[str] | None = None):
         super().__init__(root_dir, split, transform, additional_keys)
-        self.check_split(['train', 'val', 'trainval', 'test'])
+        self._check_split(['train', 'val', 'trainval', 'test'])
 
         if self.additional_keys:
-            assert all([key in self.AVAILABLE_KEYS for key in self.additional_keys]), \
+            assert all([key in self._AVAILABLE_KEYS for key in self.additional_keys]), \
                 f'Invalid additional keys: {self.additional_keys}'
 
         self.raw_data = self._load_paths()
 
     def __getitem__(self, index: int) -> dict[str, Any]:
-        data = self.load_data(index)
+        data = self._load_data(index)
         image: np.ndarray = data['image']
         label: np.ndarray = data['label']
         if self.transform is not None:
@@ -67,7 +67,7 @@ class NIH(BaseComponent):
     def __len__(self) -> int:
         return len(self.raw_data)
 
-    def load_data(self, index: int) -> dict[str, Any]:
+    def _load_data(self, index: int) -> dict[str, Any]:
         raw_data = self.raw_data[index]
         # load image
         image_path = Path(self.root_dir) / raw_data['path']

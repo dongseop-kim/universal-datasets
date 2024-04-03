@@ -27,19 +27,19 @@ class PublicTuberculosis(BaseComponent):
         transform : Composed transforms
         dataset : dataset name to load
     """
-    AVAILABLE_DATASETS = ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k']
-    AVAILABLE_KEYS = ['age', 'gender', 'report']
+    _AVAILABLE_DATASETS = ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k']
+    _AVAILABLE_KEYS = ['age', 'gender', 'report']
 
     def __init__(self, root_dir: str, split: str,
                  transform=None, dataset: str = 'shenzhen',
                  additional_keys: Optional[list[str]] = None):
         super().__init__(root_dir, split, transform, additional_keys)
-        self.check_split(['train', 'val', 'trainval', 'test'])
-        assert dataset in self.AVAILABLE_DATASETS, \
+        self._check_split(['train', 'val', 'trainval', 'test'])
+        assert dataset in self._AVAILABLE_DATASETS, \
             f'Invalid dataset: {dataset}, must be one of tbxpredict, shenzhen, montgomery, tbx11k'
 
         if self.additional_keys:
-            assert all([key in self.AVAILABLE_KEYS for key in self.additional_keys]), \
+            assert all([key in self._AVAILABLE_KEYS for key in self.additional_keys]), \
                 f'Invalid additional keys: {self.additional_keys}'
 
         self.dataset = dataset
@@ -49,7 +49,7 @@ class PublicTuberculosis(BaseComponent):
         self.raw_data = self._load_paths()
 
     def __getitem__(self, index) -> dict[str, Any]:
-        data = self.load_data(index)
+        data = self._load_data(index)
         image: np.ndarray = data['image']
         label: np.ndarray = data['label']
         if self.transform is not None:
@@ -68,7 +68,7 @@ class PublicTuberculosis(BaseComponent):
     def __len__(self) -> int:
         return len(self.raw_data)
 
-    def load_data(self, index) -> dict[str, Any]:
+    def _load_data(self, index) -> dict[str, Any]:
         raw_data = self.raw_data[index]
 
         # load image
