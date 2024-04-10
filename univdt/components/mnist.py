@@ -22,7 +22,7 @@ class MNIST(TorchMNIST, BaseComponent):
             transformed = self.transform(image=image)
             image = transformed['image']
         # convert image to pytorch tensor
-        image = image.unsqueeze(2)
+        image = np.expand_dims(image, axis=2)
         image = image.transpose(2, 0, 1)
         image = image.astype('float32') / 255.0
         image = torch.Tensor(image)
