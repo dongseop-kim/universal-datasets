@@ -1,6 +1,7 @@
 from typing import Any
 
 import numpy as np
+import torch
 from torchvision.datasets import MNIST as TorchMNIST
 
 from univdt.components.base import BaseComponent
@@ -20,4 +21,10 @@ class MNIST(TorchMNIST, BaseComponent):
         if self.transform is not None:
             transformed = self.transform(image=image)
             image = transformed['image']
+        # convert image to pytorch tensor
+        image = image.unsqueeze(2)
+        image = image.transpose(2, 0, 1)
+        image = image.astype('float32') / 255.0
+        image = torch.Tensor(image)
+        label = torch.LongTensor([label])
         return {'image': image, 'label': label}
