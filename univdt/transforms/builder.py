@@ -33,5 +33,5 @@ def build_transforms(transforms: dict[str, Any]):
         else:
             return config
 
-    return [AVAILABLE_TRANSFORMS[str(key)](**recursive_check(val) if val else {})
-            for key, val in transforms.items()]
+    return A.Compose([AVAILABLE_TRANSFORMS[str(key)](**recursive_check(val) if val else {})
+                      for key, val in transforms.items()])
