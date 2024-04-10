@@ -14,8 +14,8 @@ class MNIST(TorchMNIST, BaseComponent):
         TorchMNIST.__init__(self, root_dir, train=(split == 'train'), transform=transform, download=True)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
-        image, label = super().__getitem__(index)
-        image: np.ndarray = np.array(image)
+        image, label = self.data[index], int(self.targets[index])
+        image: np.ndarray = image.numpy()
 
         if self.transform is not None:
             transformed = self.transform(image=image)

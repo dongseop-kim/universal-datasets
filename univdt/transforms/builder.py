@@ -1,5 +1,5 @@
 from typing import Any
-
+import albumentations as A
 from omegaconf import DictConfig, ListConfig
 
 from .pixel import (random_blur, random_brightness, random_clahe,
@@ -8,11 +8,13 @@ from .pixel import (random_blur, random_brightness, random_clahe,
 from .resize import random_resize
 from .zoom import random_zoom
 
-AVAILABLE_TRANSFORMS = {'random_blur': random_blur,
+AVAILABLE_TRANSFORMS = {'resize': A.Resize,
+                        'random_blur': random_blur,
                         'random_brightness': random_brightness,
                         'random_clahe': random_clahe,
                         'random_compression': random_compression,
                         'random_contrast': random_contrast,
+                        'random_flip': A.HorizontalFlip,
                         'random_gamma': random_gamma,
                         'random_histequal': random_hist_equal,
                         'random_noise': random_noise,

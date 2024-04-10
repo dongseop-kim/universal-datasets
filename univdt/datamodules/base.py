@@ -95,7 +95,7 @@ class BaseDataModule(LightningDataModule):
     def _load_datasets(self, split: str, transforms: dict[str, Any]):
         loaded_datasets = []
         for data_dir, dataset in zip(self.data_dir, self.datasets):
-            loaded_datasets.append(AVAILABLE_COMPONENTS[dataset](data_dir, split, transforms, self.additional_keys))
+            loaded_datasets.append(AVAILABLE_COMPONENTS[dataset](data_dir, split, transforms))
         return ConcatDataset(loaded_datasets)
 
     def setup(self, stage: str = 'fit'):
