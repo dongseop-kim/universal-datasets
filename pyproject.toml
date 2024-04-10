@@ -19,9 +19,9 @@ authors = [{name = "Pradyun dongseopkim", email = "k_ds1028@naver.com"}]
 readme = "README.md"
 keywords = ["python", "dataset", "camvid", "voc", "publictb", "nih", "chestxray14", "shenzhen", 
             "montgomery", "tbx11k", "dadb", "tbpredict"]
-requires-python = "==3.10"
-dependencies = ["torch== 1.13.0",
-                "lightning==2.1.3",
+requires-python = ">=3.10"
+dependencies = ["torch>=1.13.0",
+                "lightning>=2.1.3",
                 "pytest",
                 "opencv-python-headless>=4.9.0",
                 "albumentations==1.3.1",
