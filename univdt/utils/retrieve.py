@@ -19,9 +19,9 @@ def load_pickle(filepath: str):
         return pickle.load(f)
 
 
-def load_csv(filepath: str):
+def load_csv(filepath: str, **kwargs):
     import pandas
-    return pandas.read_csv(filepath)
+    return pandas.read_csv(filepath, **kwargs)
 
 
 def load_json(filepath: str):
