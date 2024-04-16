@@ -59,8 +59,7 @@ class NIH(BaseComponent):
         image = image.transpose(2, 0, 1)
         image = image.astype('float32') / 255.0
         image = torch.Tensor(image)
-        output = {'image': image, 'label': label,
-                  'path': data['path']}
+        output = {'image': image, 'label': label, 'path': data['path']}
         output.update({key: data[key] for key in self.additional_keys})
         return output
 
