@@ -1,7 +1,3 @@
-# Justified Referral in AI Glaucoma Screening
-# https://justraigs.grand-challenge.org/justraigs
-
-import itertools
 from pathlib import Path
 from typing import Any
 
@@ -15,7 +11,8 @@ from univdt.utils.retrieve import load_file
 
 class JRAIGS(BaseComponent):
     """
-    JRAIGS dataset for glaucoma screening
+    Justified Referral in AI Glaucoma Screening dataset for glaucoma screening
+    https://justraigs.grand-challenge.org/justraigs
 
     Args:
         root : root folder for dataset
@@ -89,24 +86,3 @@ class JRAIGS(BaseComponent):
                     annot['path'] = str(new_path)
                     break
         return annots
-
-    # def _load_paths(self) -> list[dict[str, Any]]:
-    #     dummy = load_file(Path(self.root_dir) / 'just_raigs_train_folded.json')
-    #     dummy = [ann for ann in dummy if ann['fold'] in
-    #              (self.fold_train if self.split == 'train' else self.fold_val)]
-    #     annots = [img for annot in dummy for img in annot['images']]
-
-    #     if self.balance_classes:
-    #         # normal과 abnormal의 샘플을 분리
-    #         normal_samples = [annot for annot in annots if annot['label'].lower() == 'normal']
-    #         abnormal_samples = [annot for annot in annots if annot['label'].lower() != 'normal']
-    #         # normal과 abnormal 중 적은 수를 따라감
-    #         min_samples = min(len(normal_samples), len(abnormal_samples))
-    #         # 각 클래스에서 동일한 수의 샘플을 선택하여 리스트로 만듦
-    #         balanced_samples = list(itertools.chain.from_iterable(itertools.zip_longest(normal_samples[:min_samples],
-    #                                                                                     abnormal_samples[:min_samples])))
-    #         # None 값 제거
-    #         balanced_samples = [sample for sample in balanced_samples if sample is not None]
-    #         annots = balanced_samples
-
-    #     return annots
