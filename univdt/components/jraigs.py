@@ -49,8 +49,7 @@ class JRAIGS(BaseComponent):
         self.normal_ratio = normal_ratio
 
         self.len_total = None
-        if normal_ratio > 0:
-            assert self.split == 'train', 'Balancing is only for training set'
+        if normal_ratio > 0 and split == 'train':
             self._balancing_annots()
 
     def __getitem__(self, index) -> Any:
