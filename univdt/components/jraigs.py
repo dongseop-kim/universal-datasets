@@ -1,3 +1,4 @@
+import random
 from pathlib import Path
 from typing import Any
 
@@ -19,13 +20,15 @@ class JRAIGS(BaseComponent):
         split : 'train', 'val', 'test' and 'trainval'
         transform : Composed transforms
         fold : int or list of int for validation fold. Default is 1.
+        normal_ratio : float for balancing normal and abnormal samples. Default is -1.0.
+        additional_keys : list of additional keys to be included in the output. Default is None.
     """
 
     _AVAILABLE_SPLITS = ['train', 'val']
     _AVAILABLE_KEYS = ['difficulty']
 
     def __init__(self, root_dir: str, split: str, transform=None, fold: int | list[int] = 1,
-                 additional_keys: list[str] | None = None):
+                 normal_ratio: float = -1.0, additional_keys: list[str] | None = None):
         super().__init__(root_dir, split, transform)
         self._check_split(self._AVAILABLE_SPLITS)
 
@@ -43,6 +46,12 @@ class JRAIGS(BaseComponent):
         self.num_classes = 1
 
         self.annots = self._load_paths()
+        self.normal_ratio = normal_ratio
+
+        self.len_total = None
+        if normal_ratio > 0:
+            assert self.split == 'train', 'Balancing is only for training set'
+            self._balancing_annots()
 
     def __getitem__(self, index) -> Any:
         data = self._load_data(index)
@@ -63,12 +72,21 @@ class JRAIGS(BaseComponent):
         return output
 
     def __len__(self) -> int:
-        return len(self.annots)
+        return len(self.annots) if self.len_total is None else self.len_total
 
     def _load_data(self, index: int) -> dict[str, Any]:
+        if self.len_total is not None:
+            if index < self.len_abnormal:
+                data = self.annots_abnormal[index]
+            else:
+                index = index - self.len_abnormal
+                # normal 전체 길이에서 index를 유니폼하게 랜덤하게 뽑아서 사용
+                index = random.randint(0, self.len_normal - 1)
+                data = self.annots_normal[index]
+
         data = self.annots[index]
         path: str = data['path']
-        label: str = data['label'][0].lower()  # main label
+        label: str = data['label']
         difficulty: int = int(data['difficult'])  # 1 or 0 for difficult or not
         image: np.ndarray = load_image(path, out_channels=3)  # 8bit 3 channel image
         return {'image': image, 'label': label, 'path': path, 'difficulty': difficulty}
@@ -79,10 +97,18 @@ class JRAIGS(BaseComponent):
                  (self.fold_train if self.split == 'train' else self.fold_val)]
         annots = [img for annot in dummy for img in annot['images']]
         for annot in annots:
+            annot['label'] = annot['label'][0].lower()
             path = Path(self.root_dir) / 'images' / annot['path']
-            for ext in ['JPG', 'JPEG', 'PNG']:
-                new_path = path.with_suffix(f'.{ext}')
-                if new_path.exists():
-                    annot['path'] = str(new_path)
-                    break
+            annot['path'] = str(path.with_suffix('.jpg'))
         return annots
+
+    def _balancing_annots(self):
+        cnt_abnormal = sum([1 for annot in self.annots if annot['label'] == 'rg'])
+        cnt_normal = sum([1 for annot in self.annots if annot['label'] == 'nrg'])
+        assert len(self.annots) == cnt_abnormal + cnt_normal, 'Invalid annotations'
+        self.annots_abnormal = [annot for annot in self.annots if annot['label'] == 'rg']
+        self.annots_normal = [annot for annot in self.annots if annot['label'] == 'nrg']
+
+        self.len_abnormal = len(self.annots_abnormal)
+        self.len_normal = int(self.len_abnormal * self.normal_ratio)
+        self.len_total = self.len_abnormal + self.len_normal
