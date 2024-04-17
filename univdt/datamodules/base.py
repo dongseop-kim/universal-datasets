@@ -45,6 +45,7 @@ class BaseDataModule(LightningDataModule):
     def __init__(self,
                  data_dir: str | list[str],
                  datasets: str | list[str],
+                 dataset_kwargs: dict[str, Any],
                  batch_size: int,
                  num_workers: Optional[int] = 0,
 
@@ -71,6 +72,7 @@ class BaseDataModule(LightningDataModule):
         assert self.split_train in ['train', 'trainval'], f'Invalid split for training: {self.split_train}'
         assert self.split_val in ['val', 'test'], f'Invalid split for validation: {self.split_val}'
         assert self.split_test in ['val', 'test'], f'Invalid split for testing: {self.split_test}'
+        self.dataset_kwargs = dataset_kwargs
         self.additional_keys = additional_keys
 
         # set hyperparameters for dataloader
@@ -93,7 +95,7 @@ class BaseDataModule(LightningDataModule):
         self.dataset_val: BaseComponent = None
         self.dataset_test: BaseComponent = None
 
-    def _load_datasets(self, split: str, transforms: dict[str, Any]):
+    def _load_datasets(self, split: str, transforms: dict[str, Any], dataset_kwargs):
         loaded_datasets = []
         for data_dir, dataset in zip(self.data_dir, self.datasets):
             loaded_datasets.append(AVAILABLE_COMPONENTS[dataset](data_dir, split, transforms))
@@ -104,12 +106,16 @@ class BaseDataModule(LightningDataModule):
             f"Invalid stage: {stage}. Must be in ['fit', 'validate', 'test', 'predict']"
         match stage:
             case 'fit':
-                self.dataset_train = self._load_datasets(self.split_train, self.transforms_train)
-                self.dataset_val = self._load_datasets(self.split_val, self.transforms_train)
+                self.dataset_train = self._load_datasets(self.split_train, self.transforms_train,
+                                                         self.dataset_kwargs)
+                self.dataset_val = self._load_datasets(self.split_val, self.transforms_train,
+                                                       self.dataset_kwargs)
             case 'validate':
-                self.dataset_val = self._load_datasets(self.split_val, self.transforms_train)
+                self.dataset_val = self._load_datasets(self.split_val, self.transforms_train,
+                                                       self.dataset_kwargs)
             case 'test':
-                self.dataset_test = self._load_datasets(self.split_test, self.transforms_test)
+                self.dataset_test = self._load_datasets(self.split_test, self.transforms_test,
+                                                        self.dataset_kwargs)
             case 'predict':
                 pass
 
