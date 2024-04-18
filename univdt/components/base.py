@@ -19,7 +19,7 @@ class BaseComponent(Dataset):
 
         self.collate_fn = None
 
-    def _load_data(self, index) -> dict[str, Any]:
+    def load_data(self, index) -> dict[str, Any]:
         """
         Load raw image, raw data and path from the given index.
 

@@ -95,23 +95,26 @@ class BaseDataModule(LightningDataModule):
         self.dataset_val: BaseComponent = None
         self.dataset_test: BaseComponent = None
 
-    def _load_datasets(self, split: str, transforms: dict[str, Any], dataset_kwargs):
+    def _load_datasets(self, split: str, transform: dict[str, Any], dataset_kwargs):
         loaded_datasets = []
         for data_dir, dataset in zip(self.data_dir, self.datasets):
-            loaded_datasets.append(AVAILABLE_COMPONENTS[dataset](data_dir, split, transforms, **dataset_kwargs))
-        return ConcatDataset(loaded_datasets)
+            loaded_datasets.append(AVAILABLE_COMPONENTS[dataset](root_dir=data_dir,
+                                                                 split=split,
+                                                                 transform=transform, **dataset_kwargs))
+        return ConcatDataset(loaded_datasets) if len(loaded_datasets) > 1 else loaded_datasets[0]
 
     def setup(self, stage: str = 'fit'):
         assert stage in ['fit', 'validate', 'test', 'predict'], \
             f"Invalid stage: {stage}. Must be in ['fit', 'validate', 'test', 'predict']"
+
         match stage:
             case 'fit':
                 self.dataset_train = self._load_datasets(self.split_train, self.transforms_train,
                                                          self.dataset_kwargs)
-                self.dataset_val = self._load_datasets(self.split_val, self.transforms_train,
+                self.dataset_val = self._load_datasets(self.split_val, self.transforms_val,
                                                        self.dataset_kwargs)
             case 'validate':
-                self.dataset_val = self._load_datasets(self.split_val, self.transforms_train,
+                self.dataset_val = self._load_datasets(self.split_val, self.transforms_val,
                                                        self.dataset_kwargs)
             case 'test':
                 self.dataset_test = self._load_datasets(self.split_test, self.transforms_test,

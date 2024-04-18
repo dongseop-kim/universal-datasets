@@ -1,7 +1,7 @@
 import random
 from pathlib import Path
 from typing import Any
-
+from collections.abc import Sequence
 import numpy as np
 import torch
 
@@ -29,11 +29,12 @@ class JRAIGS(BaseComponent):
 
     def __init__(self, root_dir: str, split: str, transform=None, fold: int | list[int] = 1,
                  normal_ratio: float = -1.0, additional_keys: list[str] | None = None):
-        super().__init__(root_dir, split, transform)
+        super().__init__(root_dir=root_dir, split=split, transform=transform)
         self._check_split(self._AVAILABLE_SPLITS)
 
-        self.fold_val = fold if isinstance(fold, list) else [fold]
-        self.fold_train = list(set(range(10)) - set(self.fold_val))
+        self.fold = fold if isinstance(fold, Sequence) else [fold]
+        if self.split == 'train':
+            self.fold = list(set(range(10)) - set(self.fold))
 
         # additional keys
         additional_keys = additional_keys if additional_keys is not None else []
@@ -49,7 +50,7 @@ class JRAIGS(BaseComponent):
         self.normal_ratio = normal_ratio
 
         self.len_total = None
-        if normal_ratio > 0 and split == 'train':
+        if normal_ratio > 0 and self.split == 'train':
             self._balancing_annots()
 
     def __getitem__(self, index) -> Any:
@@ -74,16 +75,17 @@ class JRAIGS(BaseComponent):
         return len(self.annots) if self.len_total is None else self.len_total
 
     def _load_data(self, index: int) -> dict[str, Any]:
+        data = self.annots[index]
+
         if self.len_total is not None:
             if index < self.len_abnormal:
                 data = self.annots_abnormal[index]
             else:
-                index = index - self.len_abnormal
+                # index = index - self.len_abnormal
                 # normal 전체 길이에서 index를 유니폼하게 랜덤하게 뽑아서 사용
                 index = random.randint(0, self.len_normal - 1)
-                data = self.annots_normal[index]
+                data = self.annots_normal[index]       
 
-        data = self.annots[index]
         path: str = data['path']
         label: str = data['label']
         difficulty: int = int(data['difficult'])  # 1 or 0 for difficult or not
@@ -92,9 +94,8 @@ class JRAIGS(BaseComponent):
 
     def _load_paths(self) -> list[dict[str, Any]]:
         dummy = load_file(Path(self.root_dir) / 'just_raigs_train_folded.json')
-        dummy = [ann for ann in dummy if ann['fold'] in
-                 (self.fold_train if self.split == 'train' else self.fold_val)]
-        annots = [img for annot in dummy for img in annot['images']]
+        dummy = [d for d in dummy if d['fold'] in self.fold]
+        annots = [img for d in dummy for img in d['images']] # flatten
         for annot in annots:
             annot['label'] = annot['label'][0].lower()
             path = Path(self.root_dir) / 'images' / annot['path']
