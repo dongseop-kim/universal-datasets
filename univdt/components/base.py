@@ -2,6 +2,14 @@ from abc import abstractmethod
 from typing import Any,  Optional
 
 from torch.utils.data import Dataset
+from dataclasses import dataclass
+
+
+@dataclass
+class Data:
+    image: Any
+    raw_data: Any
+    path: str
 
 
 class BaseComponent(Dataset):
