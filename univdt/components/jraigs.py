@@ -63,10 +63,7 @@ class JRAIGS(BaseComponent):
             transformed = self.transform(image=image)
             image = transformed['image']
 
-        # convert image to pytorch tensor
-        image = image.transpose(2, 0, 1)
-        image = image.astype('float32') / 255.0
-        image = torch.Tensor(image)
+        image = self._to_tensor(image)  # convert image to pytorch tensor
         output = {'image': image, 'label': label, 'path': data['path']}
         output.update({key: data[key] for key in self.additional_keys})
         return output
@@ -84,7 +81,7 @@ class JRAIGS(BaseComponent):
                 # index = index - self.len_abnormal
                 # normal 전체 길이에서 index를 유니폼하게 랜덤하게 뽑아서 사용
                 index = random.randint(0, self.len_normal - 1)
-                data = self.annots_normal[index]       
+                data = self.annots_normal[index]
 
         path: str = data['path']
         label: str = data['label']
@@ -95,7 +92,7 @@ class JRAIGS(BaseComponent):
     def _load_paths(self) -> list[dict[str, Any]]:
         dummy = load_file(Path(self.root_dir) / 'just_raigs_train_folded.json')
         dummy = [d for d in dummy if d['fold'] in self.fold]
-        annots = [img for d in dummy for img in d['images']] # flatten
+        annots = [img for d in dummy for img in d['images']]  # flatten
         for annot in annots:
             annot['label'] = annot['label'][0].lower()
             path = Path(self.root_dir) / 'images' / annot['path']

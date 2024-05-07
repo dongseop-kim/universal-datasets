@@ -21,10 +21,6 @@ class MNIST(TorchMNIST, BaseComponent):
         if self.transform is not None:
             transformed = self.transform(image=image)
             image = transformed['image']
-        # convert image to pytorch tensor
-        image = np.expand_dims(image, axis=2)
-        image = image.transpose(2, 0, 1)
-        image = image.astype('float32') / 255.0
-        image = torch.Tensor(image)
+        image = self._to_tensor(image)  # convert image to pytorch tensor
         label = torch.LongTensor([label])
         return {'image': image, 'label': label}

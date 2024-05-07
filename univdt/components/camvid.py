@@ -4,6 +4,7 @@ from typing import Any, List, Tuple
 
 import cv2
 import numpy as np
+import torch
 
 from univdt.components.base import BaseComponent
 from univdt.utils.image import load_image
@@ -51,7 +52,11 @@ class CamVid(BaseComponent):
             transformed = self.transform(image=image, mask=mask)
             image = transformed['image']
             mask = transformed['mask']
-        return {'image': image, 'mask': mask, 'path': data['path']}
+
+        image = self._to_tensor(image)  # convert image to pytorch tensor
+        mask = torch.from_numpy(mask).long()  # convert mask to pytorch tensor
+        return {'image': image, 'mask': mask,
+                'path': str(data['path'])}
 
     def __len__(self) -> int:
         return len(self.paths)
