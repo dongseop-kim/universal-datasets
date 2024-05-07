@@ -15,7 +15,7 @@ build-backend = "setuptools.build_meta"
 name = "univdt"
 version = "0.0.5"
 description = "universal-datasets"
-authors = [{name = "Pradyun dongseopkim", email = "k_ds1028@naver.com"}]
+authors = [{name = "dongseopkim", email = "k_ds1028@naver.com"}]
 readme = "README.md"
 keywords = ["python", "dataset", "camvid", "voc", "publictb", "nih", "chestxray14", "shenzhen", 
             "montgomery", "tbx11k", "dadb", "tbpredict"]
