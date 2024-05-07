@@ -10,8 +10,7 @@ from univdt.components import (JRAIGS, MNIST, NIH, BaseComponent, CamVid,
 from univdt.transforms import build_transforms
 
 AVAILABLE_COMPONENTS = {'camvid': CamVid, 'mnist': MNIST, 'nih': NIH,
-                        'jraigs': JRAIGS,
-                        'pascalvoc': PascalVOC,
+                        'jraigs': JRAIGS, 'pascalvoc': PascalVOC,
                         'publictuberculosis': PublicTuberculosis}
 
 
