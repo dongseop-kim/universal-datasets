@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 import albumentations as A
 from pytorch_lightning import LightningDataModule
@@ -9,16 +9,9 @@ from univdt.components import (JRAIGS, MNIST, NIH, BaseComponent, CamVid,
                                PascalVOC, PublicTuberculosis)
 from univdt.transforms import build_transforms
 
-AVAILABLE_COMPONENTS = {'mnist': MNIST,
-                        'nih': NIH,
-                        'camvid': CamVid,
-                        'jraigs': JRAIGS,
-                        'pascalvoc': PascalVOC,
+AVAILABLE_COMPONENTS = {'camvid': CamVid, 'mnist': MNIST, 'nih': NIH,
+                        'jraigs': JRAIGS, 'pascalvoc': PascalVOC,
                         'publictuberculosis': PublicTuberculosis}
-
-DEFAULT_HEIGHT = 256
-DEFAULT_WIDTH = 256
-DEFAULT_TRANSFORMS = A.Compose([A.Resize(height=DEFAULT_HEIGHT, width=DEFAULT_WIDTH, p=1.0)])
 
 
 class BaseDataModule(LightningDataModule):
@@ -28,7 +21,6 @@ class BaseDataModule(LightningDataModule):
     Args:
         data_dir : root directory for dataset
         datasets : dataset names to load. if multiple datasets are given, they will be concatenated
-        batch_size : batch size for dataloader. if batch_size is given, all batch_size_* will be ignored
         num_workers : number of workers for dataloader
         additional_keys (optional) : additional keys to load dataset
         split_train (optional) : split name for training. default is 'train'. either 'train' or 'trainval'
@@ -45,9 +37,7 @@ class BaseDataModule(LightningDataModule):
     def __init__(self,
                  data_dir: str | list[str],
                  datasets: str | list[str],
-                 dataset_kwargs: dict[str, Any],
-                 batch_size: int,
-                 num_workers: Optional[int] = 0,
+                 dataset_kwargs: dict[str, Any] = {},
 
                  split_train: Optional[str] = 'train',
                  split_val: Optional[str] = 'val',
@@ -60,8 +50,12 @@ class BaseDataModule(LightningDataModule):
 
                  batch_size_train: Optional[int] = None,
                  batch_size_val: Optional[int] = None,
-                 batch_size_test: Optional[int] = None):
+                 batch_size_test: Optional[int] = None,
+                 num_workers: Optional[int] = 0,
+                 init_set: Literal['fit', 'validate', 'test', 'predict'] = 'fit'):
+
         super().__init__()
+
         self.data_dir = [data_dir] if isinstance(data_dir, str) else data_dir
         self.datasets = [datasets] if isinstance(datasets, str) else datasets
 
@@ -76,24 +70,30 @@ class BaseDataModule(LightningDataModule):
         self.additional_keys = additional_keys
 
         # set hyperparameters for dataloader
-        self.batch_size_train = batch_size_train or batch_size
-        self.batch_size_val = batch_size_val or batch_size
-        self.batch_size_test = batch_size_test or batch_size
+        self.batch_size_train = batch_size_train
+        self.batch_size_val = batch_size_val
+        self.batch_size_test = batch_size_test
         self.num_workers = num_workers if num_workers is not None else 0
         self.persistent_workers = True if self.num_workers > 0 else False
-        self.pin_memory = True  # if self.num_workers > 0 else False
+        self.pin_memory = True
 
         # get transforms
         self.transforms_train = build_transforms(transforms_train) \
-            if transforms_train is not None else DEFAULT_TRANSFORMS
+            if transforms_train is not None else None
         self.transforms_val = build_transforms(transforms_val) \
-            if transforms_val is not None else DEFAULT_TRANSFORMS
+            if transforms_val is not None else None
         self.transforms_test = build_transforms(transforms_test) \
-            if transforms_test is not None else DEFAULT_TRANSFORMS
+            if transforms_test is not None else None
 
         self.dataset_train: BaseComponent = None
         self.dataset_val: BaseComponent = None
         self.dataset_test: BaseComponent = None
+
+        self.common_loader_settings = {'num_workers': self.num_workers,
+                                       'pin_memory': self.pin_memory,
+                                       'persistent_workers': self.persistent_workers}
+        self.setup(init_set)
+        self.num_classes = self.dataset_train.num_classes
 
     def _load_datasets(self, split: str, transform: dict[str, Any], dataset_kwargs):
         loaded_datasets = []
@@ -127,19 +127,19 @@ class BaseDataModule(LightningDataModule):
         super().teardown(stage)
 
     def train_dataloader(self):
-        return DataLoader(self.dataset_train, batch_size=self.batch_size_train, shuffle=True, num_workers=self.num_workers,
-                          drop_last=True, pin_memory=self.pin_memory, persistent_workers=self.persistent_workers,
-                          collate_fn=None)
+        return DataLoader(self.dataset_train, batch_size=self.batch_size_train, shuffle=True, drop_last=True,
+                          collate_fn=None,
+                          **self.common_loader_settings)
 
     def val_dataloader(self):
-        return DataLoader(self.dataset_val, batch_size=self.batch_size_val, shuffle=False, num_workers=self.num_workers,
-                          drop_last=False, pin_memory=self.pin_memory, persistent_workers=self.persistent_workers,
-                          collate_fn=None)
+        return DataLoader(self.dataset_val, batch_size=self.batch_size_val, shuffle=False, drop_last=False,
+                          collate_fn=None,
+                          **self.common_loader_settings)
 
     def test_dataloader(self):
-        return DataLoader(self.dataset_test, batch_size=self.batch_size_test, shuffle=False, num_workers=self.num_workers,
-                          drop_last=False, pin_memory=self.pin_memory, persistent_workers=self.persistent_workers,
-                          collate_fn=None)
+        return DataLoader(self.dataset_test, batch_size=self.batch_size_test, shuffle=False, drop_last=False,
+                          collate_fn=None,
+                          **self.common_loader_settings)
 
     def predict_dataloader(self):
         # TODO: Implement predict dataloader!

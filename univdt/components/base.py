@@ -1,8 +1,10 @@
 from abc import abstractmethod
-from typing import Any,  Optional
-
-from torch.utils.data import Dataset
 from dataclasses import dataclass
+from typing import Any, Optional
+
+import numpy as np
+import torch
+from torch.utils.data import Dataset
 
 
 @dataclass
@@ -45,3 +47,12 @@ class BaseComponent(Dataset):
 
     def _check_split(self, split: list[str]) -> bool:
         assert self.split in split, f'Invalid split: {self.split}, must be one of {split}'
+
+    def _to_tensor(self, image: np.ndarray) -> torch.Tensor:
+        """
+        Convert image to tensor. 
+        """
+        assert image.ndim == 3, f'Image must have 3 dimensions, got {image.ndim}'
+        image = image.transpose(2, 0, 1)
+        image = image.astype('float32') / 255.0
+        return torch.Tensor(image)

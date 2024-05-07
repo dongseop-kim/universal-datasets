@@ -3,8 +3,8 @@ from collections import namedtuple
 from pathlib import Path
 from typing import Any
 
-import cv2
 import numpy as np
+import torch
 from PIL import Image
 
 from univdt.components.base import BaseComponent
@@ -65,6 +65,9 @@ class PascalVOC(BaseComponent):
             transformed = self.transform(image=image, mask=mask)
             image = transformed['image']
             mask = transformed['mask']
+
+        image = self._to_tensor(image)  # convert image to pytorch tensor
+        mask = torch.from_numpy(mask).long()  # convert mask to pytorch tensor
         return {'image': image, 'mask': mask, 'path': data['path']}
 
     def __len__(self) -> int:
