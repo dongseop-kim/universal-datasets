@@ -216,18 +216,22 @@ class RandAugmentPixel(ImageOnlyTransform):
     '''RandAugment for pixel-level transforms
     Args:
         transforms (Dict[str, Dict]): dictionary of transforms to apply
+        min_n (int): minimum number of transforms to apply
         max_n (int): maximum number of transforms to apply
+        replace (bool): Whether the sampled transforms are with or without replacement. Default: True.
         p (float): probability of applying the transform. (default: 1.0).  the p of each transform is normalized.
     '''
 
     def __init__(self, transforms: dict[str, dict],
-                 min_n: int = 1, max_n: int = 3, p: float = 1.0):
+                 min_n: int = 1, max_n: int = 3,
+                 replace: bool = True, p: float = 1.0):
         super(ImageOnlyTransform, self).__init__(always_apply=False, p=p)
         if not transforms:
             raise ValueError('transforms must be specified for training')
         self.min_n, self.max_n = min_n, max_n
+        self.replace = replace
         t = [AVAILABLE_TRANSFORMS[key](**val) for key, val in transforms.items()]
-        self.transforms = [A.SomeOf(t, n=i, p=p) for i in range(min_n, max_n+1)]
+        self.transforms = [A.SomeOf(t, n=i, p=p, replace=self.replace) for i in range(min_n, max_n+1)]
 
     def apply(self, img: np.ndarray, **params) -> np.ndarray:
         if random.random() < self.p:

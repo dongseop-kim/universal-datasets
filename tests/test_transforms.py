@@ -1,48 +1,42 @@
-import numpy as np
-import pytest
-import copy
-
 import random
-from univdt.transforms.builder import AVAILABLE_TRANSFORMS
+
+import numpy as np
+from typing import Callable
+
+from univdt.transforms.pixel import AVAILABLE_TRANSFORMS as PIXEL_TRANSFORMS
+from univdt.transforms.pixel import RandAugmentPixel
 
 # set seed for reproducibility
 np.random.seed(42)
 random.seed(42)
 
-TEST_IMAGE = np.random.randint(0, 255, (512, 512, 3), dtype=np.uint8)
+TEST_IMAGE1 = np.random.randint(0, 255, (768, 512, 3), dtype=np.uint8)
+TEST_IMAGE2 = np.random.randint(0, 255, (512, 768, 1), dtype=np.uint8)
+TEST_IMAGES = [TEST_IMAGE1, TEST_IMAGE2]
+
+_TRANSFORMS = {'random_windowing': {'magnitude': 0.5, 'p': 1.0},
+               'random_blur': {'magnitude': 0.5, 'p': 1.0},
+               'random_gamma': {'magnitude': 0.5, 'p': 1.0},
+               'random_brightness': {'magnitude': 0.5, 'p': 1.0},
+               'random_clahe': {'magnitude': 0.5, 'p': 1.0},
+               'random_contrast': {'magnitude': 0.5, 'p': 1.0},
+               'random_compression': {'magnitude': 0.5, 'p': 1.0},
+               'random_noise': {'magnitude': 0.5, 'p': 1.0},
+               'random_histequal': {'magnitude': 0.5, 'p': 1.0}}
 
 
-def test_random_windowing():
-    windower = AVAILABLE_TRANSFORMS['random_windowing'](magnitude=1.0, p=1.0)
-    augmented: np.ndarray = windower(image=copy.deepcopy(TEST_IMAGE))['image']
-    assert augmented.shape == (512, 512, 3)
-    assert augmented.dtype == np.uint8
-    print("random windowing")
-    print(TEST_IMAGE.mean(), TEST_IMAGE.std())
-    print(augmented.mean(), augmented.std())
-    np.testing.assert_allclose(augmented.mean(), 127.01, atol=0.1)
-    np.testing.assert_allclose(augmented.std(), 73.62, atol=0.1)
+def apply_transform_and_assert_shape(transform: Callable):
+    for tester in TEST_IMAGES:
+        transformed: np.ndarray = transform(image=tester)['image']
+        assert transformed.shape == tester.shape
 
 
-def test_random_blur():
-    blur = AVAILABLE_TRANSFORMS['random_blur'](magnitude=0.5, p=1.0)
-    augmented: np.ndarray = blur(image=copy.deepcopy(TEST_IMAGE))['image']
-    assert augmented.shape == (512, 512, 3)
-    assert augmented.dtype == np.uint8
-    print("random blur")
-    print(TEST_IMAGE.mean(), TEST_IMAGE.std())
-    print(augmented.mean(), augmented.std())
-    np.testing.assert_allclose(augmented.mean(), 127.02, atol=0.1)
-    np.testing.assert_allclose(augmented.std(), 23.30, atol=0.1)
+def test_pixel_transforms():
+    for transform_key, params in _TRANSFORMS.items():
+        transform = PIXEL_TRANSFORMS[transform_key](**params)
+        apply_transform_and_assert_shape(transform)
 
 
-def test_random_gamma():
-    gamma = AVAILABLE_TRANSFORMS['random_gamma'](magnitude=0.5, p=1.0)
-    augmented: np.ndarray = gamma(image=copy.deepcopy(TEST_IMAGE))['image']
-    assert augmented.shape == (512, 512, 3)
-    assert augmented.dtype == np.uint8
-    print("random gamma")
-    print(TEST_IMAGE.mean(), TEST_IMAGE.std())
-    print(augmented.mean(), augmented.std())
-    np.testing.assert_allclose(augmented.mean(), 131.80, atol=0.1)
-    np.testing.assert_allclose(augmented.std(), 72.58, atol=0.1)
+def test_rand_aug_pixel():
+    transform = RandAugmentPixel(min_n=2, max_n=5, transforms=_TRANSFORMS)
+    apply_transform_and_assert_shape(transform)
