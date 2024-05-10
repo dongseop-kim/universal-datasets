@@ -35,112 +35,52 @@ class BaseDataModule(LightningDataModule):
     """
 
     def __init__(self,
-                 data_dir: str | list[str],
-                 datasets: str | list[str],
-                 dataset_kwargs: dict[str, Any] = {},
-
+                 config_dataset:dict[str, Any],
                  split_train: Optional[str] = 'train',
                  split_val: Optional[str] = 'val',
                  split_test: Optional[str] = 'test',
-                 additional_keys: Optional[list[str]] = [],
-
                  transforms_train: Optional[dict[str, Any]] = None,
                  transforms_val: Optional[dict[str, Any]] = None,
                  transforms_test: Optional[dict[str, Any]] = None,
-
                  batch_size_train: Optional[int] = None,
                  batch_size_val: Optional[int] = None,
                  batch_size_test: Optional[int] = None,
-                 num_workers: Optional[int] = 0,
-                 init_set: Literal['fit', 'validate', 'test', 'predict'] = 'fit'):
-
+                 num_workers: Optional[int] = 0):
         super().__init__()
+        self.config_dataset = config_dataset
+        
+        self.split_train = split_train
+        self.split_val = split_val
+        self.split_test = split_test
 
-        self.data_dir = [data_dir] if isinstance(data_dir, str) else data_dir
-        self.datasets = [datasets] if isinstance(datasets, str) else datasets
+        self.transforms_train = transforms_train
+        self.transforms_val = transforms_val
+        self.transforms_test = transforms_test
 
-        # get splits and check
-        self.split_train = split_train if split_train is not None else 'train'
-        self.split_val = split_val if split_val is not None else 'val'
-        self.split_test = split_test if split_test is not None else 'test'
-        assert self.split_train in ['train', 'trainval'], f'Invalid split for training: {self.split_train}'
-        assert self.split_val in ['val', 'test'], f'Invalid split for validation: {self.split_val}'
-        assert self.split_test in ['val', 'test'], f'Invalid split for testing: {self.split_test}'
-        self.dataset_kwargs = dataset_kwargs
-        self.additional_keys = additional_keys
-
-        # set hyperparameters for dataloader
         self.batch_size_train = batch_size_train
         self.batch_size_val = batch_size_val
         self.batch_size_test = batch_size_test
-        self.num_workers = num_workers if num_workers is not None else 0
-        self.persistent_workers = True if self.num_workers > 0 else False
-        self.pin_memory = True
+        
+        self.num_workers = num_workers
 
-        # get transforms
-        self.transforms_train = build_transforms(transforms_train) \
-            if transforms_train is not None else None
-        self.transforms_val = build_transforms(transforms_val) \
-            if transforms_val is not None else None
-        self.transforms_test = build_transforms(transforms_test) \
-            if transforms_test is not None else None
+        self._prepare_datasets()
 
-        self.dataset_train: BaseComponent = None
-        self.dataset_val: BaseComponent = None
-        self.dataset_test: BaseComponent = None
+    def _prepare_datasets(self):
+        dataset_name = self.config_dataset.pop('name')
+        dataset = partial(AVAILABLE_COMPONENTS[dataset_name], **self.config_dataset)
+        self.dataset_train = dataset(split=self.split_train, transform=self.transforms_train)
+        self.dataset_val = dataset(split=self.split_val, transform=self.transforms_val)
+        self.dataset_test = dataset(split=self.split_test, transform=self.transforms_test)
 
-        self.common_loader_settings = {'num_workers': self.num_workers,
-                                       'pin_memory': self.pin_memory,
-                                       'persistent_workers': self.persistent_workers}
-        self.setup(init_set)
-        self.num_classes = self.dataset_train.num_classes
-
-    def _load_datasets(self, split: str, transform: dict[str, Any], dataset_kwargs):
-        loaded_datasets = []
-        for data_dir, dataset in zip(self.data_dir, self.datasets):
-            loaded_datasets.append(AVAILABLE_COMPONENTS[dataset](root_dir=data_dir,
-                                                                 split=split,
-                                                                 transform=transform, **dataset_kwargs))
-        return ConcatDataset(loaded_datasets) if len(loaded_datasets) > 1 else loaded_datasets[0]
-
-    def setup(self, stage: str = 'fit'):
-        assert stage in ['fit', 'validate', 'test', 'predict'], \
-            f"Invalid stage: {stage}. Must be in ['fit', 'validate', 'test', 'predict']"
-
-        match stage:
-            case 'fit':
-                self.dataset_train = self._load_datasets(self.split_train, self.transforms_train,
-                                                         self.dataset_kwargs)
-                self.dataset_val = self._load_datasets(self.split_val, self.transforms_val,
-                                                       self.dataset_kwargs)
-            case 'validate':
-                self.dataset_val = self._load_datasets(self.split_val, self.transforms_val,
-                                                       self.dataset_kwargs)
-            case 'test':
-                self.dataset_test = self._load_datasets(self.split_test, self.transforms_test,
-                                                        self.dataset_kwargs)
-            case 'predict':
-                pass
-
-    def teardown(self, stage: str):
-        """Called at the end of fit (train + validate), validate, test, or predict."""
-        super().teardown(stage)
+    def _build_dataloader(self, dataset, batch_size):
+        return DataLoader(dataset, batch_size=batch_size, shuffle=True if dataset is self.dataset_train else False,
+                          drop_last=False, collate_fn=None, num_workers=self.num_workers, pin_memory=True)
 
     def train_dataloader(self):
-        return DataLoader(self.dataset_train, batch_size=self.batch_size_train, shuffle=True, drop_last=True,
-                          collate_fn=None,
-                          **self.common_loader_settings)
+        return self._build_dataloader(self.dataset_train, self.batch_size_train)
 
     def val_dataloader(self):
-        return DataLoader(self.dataset_val, batch_size=self.batch_size_val, shuffle=False, drop_last=False,
-                          collate_fn=None,
-                          **self.common_loader_settings)
+        return self._build_dataloader(self.dataset_val, self.batch_size_val)
 
     def test_dataloader(self):
-        return DataLoader(self.dataset_test, batch_size=self.batch_size_test, shuffle=False, drop_last=False,
-                          collate_fn=None,
-                          **self.common_loader_settings)
-
-    def predict_dataloader(self):
-        # TODO: Implement predict dataloader!
-        pass
+        return self._build_dataloader(self.dataset_test, self.batch_size_test)

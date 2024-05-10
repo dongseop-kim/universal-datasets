@@ -2,7 +2,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-import torch
 
 from univdt.components.base import BaseComponent
 from univdt.utils.image import load_image
@@ -34,13 +33,13 @@ class NIH(BaseComponent):
 
     """
 
+    _AVAILABLE_SPLITS = ['train', 'val', 'test', 'trainval']
     _AVAILABLE_KEYS = ['age', 'gender', 'view_position', 'patient_id', 'follow_up']
 
     def __init__(self, root_dir: str, split: str, transform=None,
                  additional_keys: list[str] | None = None):
-        super().__init__(root_dir, split, transform, additional_keys)
-        self._check_split(['train', 'val', 'trainval', 'test'])
-
+        super().__init__(root_dir, split, transform)
+        self.additional_keys = additional_keys if additional_keys is not None else []
         if self.additional_keys:
             assert all([key in self._AVAILABLE_KEYS for key in self.additional_keys]), \
                 f'Invalid additional keys: {self.additional_keys}'
@@ -87,7 +86,7 @@ class NIH(BaseComponent):
     def _load_paths(self):
         import pandas as pd
         # path, split, findings, age, gender, view-position, pid, follow-up
-        df = pd.read_csv(self.root_dir / 'nih.csv')
+        df = pd.read_csv(str(Path(self.root_dir) / 'nih.csv'))
         df = df[df['split'].isin([self.split])] if self.split != 'trainval' \
             else df[df['split'].isin(['train', 'val'])]
         for i, row in df.iterrows():

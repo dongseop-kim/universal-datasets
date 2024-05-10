@@ -27,13 +27,14 @@ class PublicTuberculosis(BaseComponent):
         transform : Composed transforms
         dataset : dataset name to load
     """
-    _AVAILABLE_DATASETS = ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k']
+    _AVAILABLE_SPLITS = ['train', 'val', 'test', 'trainval']
     _AVAILABLE_KEYS = ['age', 'gender', 'report']
+    _AVAILABLE_DATASETS = ['tbxpredict', 'shenzhen', 'montgomery', 'tbx11k']
 
     def __init__(self, root_dir: str, split: str,
                  transform=None, dataset: str = 'shenzhen',
                  additional_keys: Optional[list[str]] = None):
-        super().__init__(root_dir, split, transform, additional_keys)
+        super().__init__(root_dir, split, transform)
         self._check_split(['train', 'val', 'trainval', 'test'])
         assert dataset in self._AVAILABLE_DATASETS, \
             f'Invalid dataset: {dataset}, must be one of tbxpredict, shenzhen, montgomery, tbx11k'

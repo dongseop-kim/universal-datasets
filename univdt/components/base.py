@@ -18,15 +18,11 @@ class BaseComponent(Dataset):
 
     _AVAILABLE_SPLITS: list[str] = None
 
-    def __init__(self, root_dir: str, split: str, transform=None,
-                 additional_keys: Optional[list[str]] = None):
+    def __init__(self, root_dir: str, split: str, transform=None):
         self.root_dir = root_dir
         self.split = split
         self._check_split(self._AVAILABLE_SPLITS)
-
         self.transform = transform
-        self.additional_keys = additional_keys if additional_keys else []
-
         self.collate_fn = None
 
     def load_data(self, index) -> dict[str, Any]:

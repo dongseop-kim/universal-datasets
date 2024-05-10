@@ -10,7 +10,7 @@ from univdt.components.base import BaseComponent
 class MNIST(TorchMNIST, BaseComponent):
     _AVAILABLE_SPLITS = ['train', 'test']
 
-    def __init__(self, root_dir: str, split: str, transform=None, **kwargs):
+    def __init__(self, root_dir: str, split: str, transform=None):
         BaseComponent.__init__(self, root_dir, split, transform=transform)
         TorchMNIST.__init__(self, root_dir, train=(split == 'train'), transform=transform, download=True)
 
