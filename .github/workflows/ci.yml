@@ -1,0 +1,55 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build: # Build on Ubuntu with Python 3.10
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        # This is the version of the action for setting up Python, not the Python version.
+        uses: actions/setup-python@v4
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '3.10' # '3.x'
+          cache: 'pip'  # caching pip dependencies
+          # architecture: 'x64' # Optional - x64 or x86 architecture, defaults to x64
+      
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+
+      # Install CPU-based pytorch 
+      - name: Install pytorch-cpu
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install torch==1.13.1+cpu --extra-index-url https://download.pytorch.org/whl/cpu
+          python3 -c "import torch; print(torch.__version__)"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install .
+
+      - name: utils test
+        run: |
+          pytest -v tests/test_utils.py
+      
+      - name: transforms test
+        run: |
+          pytest -v tests/test_transforms.py
+
+      - name: componenets test
+        run: |
+          pytest -v tests/test_cpnts.py
