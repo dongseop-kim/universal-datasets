@@ -83,7 +83,7 @@ You can download the dataset from the [official source][TBX11K_LINK] and the [cu
 
 ### [4. NIH CXR (Chest X-Ray14)][NIH]
 
-The NIH CXR (Chest X-Ray14) dataset is a widely used collection for chest X-ray images, introduced by the National Institutes of Health (NIH). It comprises a total of 112,120 frontal-view X-ray images from 30,805 unique patients, including image-level labels for 14 different pathologies. The dataset is specifically designed for various research purposes, including the development and evaluation of machine learning algorithms for chest X-ray interpretation.<br>
+The NIH CXR (Chest X-Ray14) dataset is a widely used collection for chest X-ray images, introduced by the National Institutes of Health (NIH). It comprises a total of 112,120 frontal-view X-ray images from 30,805 unique patients, including image-level labels for 14 different pathologies. The dataset is specifically designed for various research purposes, including the development and evaluation of machine learning algorithms for chest X-ray interpretation. Among the total of 112,120, 25,596 are allocated for testset, with the remaining 86,524 intended for training and validation. However, the training and validation sets are not separated. <br>
 You can download the dataset from the [official source][NIH_LINK] and the [custom source][NIH_LINK2]. The images in the custom source have been resized to 1024x1024 and normalized to the range of 0 to 255 from the original.
 
 <details>
