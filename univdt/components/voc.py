@@ -53,7 +53,7 @@ class PascalVOC(BaseComponent):
         self.num_classes = 20  # excluding background
         self.void_class = 255
 
-        self.paths: list[tuple[str, str]] = self._load_paths()
+        self.paths: list[tuple[str, str]] = self._load_annotations()
 
     def __getitem__(self, index: int) -> dict[str, Any]:
         data: dict[str, Any] = self._load_data(index)
@@ -73,7 +73,7 @@ class PascalVOC(BaseComponent):
     def __len__(self) -> int:
         return len(self.paths)
 
-    def _load_paths(self) -> list[tuple[str, str]]:
+    def _load_annotations(self) -> list[tuple[str, str]]:
         # NOTE : currently only for semantic segmentation.
         # read file names
         root_dir = Path(self.root_dir) / 'VOC2012'

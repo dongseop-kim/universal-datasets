@@ -5,13 +5,12 @@ import albumentations as A
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader
 
-from univdt.components import (JRAIGS, MNIST, NIH, BaseComponent, CamVid,
-                               PascalVOC, PublicTuberculosis)
+from univdt.components import (MNIST, NIH, BaseComponent, CamVid, PascalVOC,
+                               PublicTuberculosis)
 from univdt.transforms import build_transforms
 
 AVAILABLE_COMPONENTS = {'camvid': CamVid, 'mnist': MNIST, 'nih': NIH,
-                        'jraigs': JRAIGS, 'pascalvoc': PascalVOC,
-                        'publictuberculosis': PublicTuberculosis}
+                        'pascalvoc': PascalVOC, 'publictuberculosis': PublicTuberculosis}
 
 
 class BaseDataModule(LightningDataModule):

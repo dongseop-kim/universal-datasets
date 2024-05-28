@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 import torch
@@ -42,7 +42,8 @@ class BaseComponent(Dataset):
         pass
 
     def _check_split(self, split: list[str]) -> bool:
-        assert self.split in split, f'Invalid split: {self.split}, must be one of {split}'
+        if self.split not in split:
+            raise ValueError(f'Invalid split: {self.split}, must be one of {split}')
 
     def _to_tensor(self, image: np.ndarray) -> torch.Tensor:
         """

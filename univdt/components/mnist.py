@@ -15,13 +15,19 @@ class MNIST(TorchMNIST, BaseComponent):
         TorchMNIST.__init__(self, root_dir, train=(split == 'train'), transform=transform, download=True)
 
     def __getitem__(self, index: int) -> dict[str, Any]:
-        image, label = self.data[index], int(self.targets[index])
-        image: np.ndarray = image.numpy()
-        image = image.reshape(28, 28, 1)
+        # _load_data is not needed for MNIST and already implemented in TorchMNIST
+        image: torch.Tensor = self.data[index]  # 0 ~ 255
+        image = torch.unsqueeze(image, 2)  # add channel dimension
+        image: np.ndarray = np.array(image)
+
+        label: torch.Tensor = self.targets[index]
+        label: np.ndarray = np.array(label)
 
         if self.transform is not None:
             transformed = self.transform(image=image)
             image = transformed['image']
+
         image = self._to_tensor(image)  # convert image to pytorch tensor
-        label = torch.LongTensor([label])
+        label = torch.from_numpy(label).long()  # convert label to pytorch tensor
+
         return {'image': image, 'label': label}

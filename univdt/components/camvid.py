@@ -42,7 +42,7 @@ class CamVid(BaseComponent):
         self.num_classes = 11
         self.void_class = 255  # class labeled as 11 is the 'void'
 
-        self.paths: list[tuple[str, str]] = self._load_paths()
+        self.paths: list[tuple[str, str]] = self._load_annotations()
 
     def __getitem__(self, index: int) -> dict[str, Any]:
         data: dict[str, Any] = self._load_data(index)
@@ -55,8 +55,7 @@ class CamVid(BaseComponent):
 
         image = self._to_tensor(image)  # convert image to pytorch tensor
         mask = torch.from_numpy(mask).long()  # convert mask to pytorch tensor
-        return {'image': image, 'mask': mask,
-                'path': str(data['path'])}
+        return {'image': image, 'mask': mask, 'path': str(data['path'])}
 
     def __len__(self) -> int:
         return len(self.paths)
@@ -71,9 +70,9 @@ class CamVid(BaseComponent):
         mask: np.ndarray = cv2.imread(path_mask, cv2.IMREAD_UNCHANGED).astype(np.uint8)
         return {'image': image, 'mask': mask, 'path': path_image}
 
-    def _load_paths(self) -> list[tuple[str, str]]:
+    def _load_annotations(self) -> list[tuple[str, str]]:
 
-        def load_paths_by_split(split: str) -> Tuple[List[Path], List[Path]]:
+        def load_annotations_by_split(split: str) -> Tuple[List[Path], List[Path]]:
             with open(Path(self.root_dir) / f'{split}.txt') as f:
                 data = [line.strip().split(" ") for line in f]
             paths_image = [Path(self.root_dir) / line[0] for line in data]
@@ -83,11 +82,11 @@ class CamVid(BaseComponent):
         if self.split == 'trainval':
             paths_image, paths_masks = [], []
             for split in ['train', 'val']:
-                split_image, split_masks = load_paths_by_split(split)
+                split_image, split_masks = load_annotations_by_split(split)
                 paths_image += split_image
                 paths_masks += split_masks
         else:
-            paths_image, paths_masks = load_paths_by_split(self.split)
+            paths_image, paths_masks = load_annotations_by_split(self.split)
 
         # check
         assert len(paths_image) == len(paths_masks)
