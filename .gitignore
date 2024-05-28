@@ -17,6 +17,6 @@ data/
 
 ### PERSONAL ###
 user-requirements.txt
-getdatasets/
 tmp/
 test_components.py
+old.*.py
