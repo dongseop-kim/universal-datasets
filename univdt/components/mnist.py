@@ -27,7 +27,7 @@ class MNIST(TorchMNIST, BaseComponent):
             transformed = self.transform(image=image)
             image = transformed['image']
 
-        image = self._to_tensor(image)  # convert image to pytorch tensor
-        label = torch.from_numpy(label).long()  # convert label to pytorch tensor
-
+        image: torch.Tensor = self._to_tensor(image)  # convert image to pytorch tensor
+        label: torch.Tensor = torch.from_numpy(label).long()  # convert label to pytorch tensor
+        label = label.unsqueeze(0)  # add batch dimension
         return {'image': image, 'label': label}

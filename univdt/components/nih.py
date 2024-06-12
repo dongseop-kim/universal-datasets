@@ -124,7 +124,6 @@ class NIH(BaseComponent):
             ann['findings'] = eval(ann['findings'])  # list[int]
 
         # filter with target findings for balanced dataset
-
         def is_abnormal(findings): return any(f in self.target_finding_ids for f in findings)
         annots_abnormal = [ann for ann in annots if is_abnormal(ann['findings'])]
         annots_normal = [ann for ann in annots if not is_abnormal(ann['findings'])]

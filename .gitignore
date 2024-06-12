@@ -18,5 +18,5 @@ data/
 ### PERSONAL ###
 user-requirements.txt
 tmp/
-test_components.py
 old.*.py
+test_components.py
