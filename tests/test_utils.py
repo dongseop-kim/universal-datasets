@@ -60,6 +60,7 @@ def create_dummy_dicom(filename: str) -> str:
     ds.Columns = 768
     ds.StudyDate = '20240101'
     ds.ViewPosition = 'AP'
+    ds.PixelSpacing = [0.1, 0.2]
 
     # Set file meta information values
     meta = pyd.Dataset()
@@ -96,3 +97,4 @@ def test_utils_dicom():
     assert ud.get_meta_from_dicom(dicom_data, 'shape') == (512, 768)
     assert ud.get_meta_from_dicom(dicom_data, 'study_date') == datetime(2024, 1, 1)
     assert ud.get_meta_from_dicom(dicom_data, 'view_position') == 'ap'
+    assert ud.get_meta_from_dicom(dicom_data, 'pixel_spacing_x') == 0.2
