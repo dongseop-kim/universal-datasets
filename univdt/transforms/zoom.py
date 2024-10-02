@@ -9,7 +9,7 @@ import numpy as np
 from albumentations.core.transforms_interface import DualTransform
 
 DEFAULT_PAD_VAL = 0
-DEFAULT_PAD_VAL_MASK = 255
+DEFAULT_PAD_VAL_MASK = 0
 DEFAULT_PROBABILITY = 1.0
 
 
