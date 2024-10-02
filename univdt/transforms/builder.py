@@ -5,13 +5,18 @@ from omegaconf import DictConfig, ListConfig
 
 from .pixel import AVAILABLE_TRANSFORMS as pixel_transforms
 from .pixel import RandAugmentPixel
-from .resize import random_resize
-from .zoom import random_zoom
+from .ratio import RandomRatio
+from .resize import Letterbox, RandomResize
+from .windowing import RandomWindowing
+from .zoom import RandomZoom
 
 AVAILABLE_TRANSFORMS = {'resize': A.Resize,
+                        'letterbox': Letterbox,
                         'random_flip': A.HorizontalFlip,
-                        'random_resize': random_resize,
-                        'random_zoom': random_zoom,
+                        'random_ratio': RandomRatio,
+                        'random_resize': RandomResize,
+                        'random_windowing': RandomWindowing,
+                        'random_zoom': RandomZoom,
                         'random_aug_pixel': RandAugmentPixel}
 
 AVAILABLE_TRANSFORMS.update(pixel_transforms)
