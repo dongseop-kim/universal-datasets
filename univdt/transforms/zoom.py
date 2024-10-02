@@ -13,11 +13,6 @@ DEFAULT_PAD_VAL_MASK = 255
 DEFAULT_PROBABILITY = 1.0
 
 
-def random_zoom(scale: float | tuple[float, float] = 0.1,
-                pad_val: int = 0, pad_val_mask: int = 255, p: float = 1.0) -> 'RandomZoom':
-    return RandomZoom(scale, pad_val, pad_val_mask, p=p)
-
-
 class RandomZoom(DualTransform):
     """
     Randomly zoom the input. Output image size is same as input image size.
