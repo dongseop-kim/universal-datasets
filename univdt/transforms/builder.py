@@ -17,7 +17,7 @@ AVAILABLE_TRANSFORMS = {'resize': A.Resize,
                         'random_resize': RandomResize,
                         'random_windowing': RandomWindowing,
                         'random_zoom': RandomZoom,
-                        'random_aug_pixel': RandAugmentPixel}
+                        'random_pixel_aug': RandAugmentPixel}
 
 AVAILABLE_TRANSFORMS.update(pixel_transforms)
 
