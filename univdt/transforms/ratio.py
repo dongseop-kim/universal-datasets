@@ -84,7 +84,7 @@ class RandomRatio(DualTransform):
         img = geo_f.resize(img, rows, cols, self.interpolation)
 
         return geo_f.pad_with_params(img, pad_top, pad_bottom, pad_left, pad_right,
-                                     border_mode=random.choice([cv2.BORDER_REFLECT, cv2.BORDER_CONSTANT]),
+                                     border_mode=cv2.BORDER_CONSTANT,
                                      value=self.value)
 
     def apply_to_mask(self, img: np.ndarray, **params: Any) -> np.ndarray:
