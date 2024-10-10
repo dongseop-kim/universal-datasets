@@ -9,6 +9,7 @@ from .ratio import RandomRatio
 from .resize import Letterbox, RandomResize
 from .windowing import RandomWindowing
 from .zoom import RandomZoom
+from .spatial_level_augs import random_spatial_augs
 
 AVAILABLE_TRANSFORMS = {'resize': A.Resize,
                         'letterbox': Letterbox,
@@ -17,7 +18,8 @@ AVAILABLE_TRANSFORMS = {'resize': A.Resize,
                         'random_resize': RandomResize,
                         'random_windowing': RandomWindowing,
                         'random_zoom': RandomZoom,
-                        'random_pixel_aug': RandAugmentPixel}
+                        'random_pixel_aug': RandAugmentPixel,
+                        'random_spatial_augs': random_spatial_augs}
 
 AVAILABLE_TRANSFORMS.update(pixel_transforms)
 
