@@ -112,7 +112,7 @@ def random_compression(magnitude: float = 0.2, p=1.0):
     # compression_type = random.choice(compression_types)
     magnitude = min(magnitude, 1.0) * 100
     compression_lower = max(1, 100 - magnitude)
-    return A.ImageCompression(quality_lower=compression_lower, quality_upper=100,
+    return A.ImageCompression(quality_lower=int(compression_lower), quality_upper=100,
                               compression_type=A.ImageCompression.ImageCompressionType.JPEG, p=p)
 
 
