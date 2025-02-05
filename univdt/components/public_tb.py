@@ -31,7 +31,7 @@ class PublicTuberculosis(BaseComponent):
 
         # TODO: add transform check here or in the base class
         
-        self.path_annotation = Path(path_annotation)
+        self.path_annotation =  Path(self.root_dir) / path_annotation
         self.raw_data = self._load_paths(self.path_annotation)
 
     def __getitem__(self, index) -> dict[str, Any]:
