@@ -2,13 +2,13 @@ import random
 from typing import Any
 
 import albumentations as A
-import albumentations.augmentations.crops.functional as crop_f
-import albumentations.augmentations.geometric.functional as geo_f
-import albumentations.augmentations.geometric.functional as gf
-import albumentations.core.bbox_utils as bbox_utils
-from albumentations.core.transforms_interface import DualTransform
 import cv2
 import numpy as np
+from albumentations.augmentations.geometric.functional import (keypoints_scale,
+                                                               pad_with_params,
+                                                               resize)
+from albumentations.core.bbox_utils import denormalize_bboxes, normalize_bboxes
+from albumentations.core.transforms_interface import DualTransform
 
 DEFAULT_PAD_VAL = 0
 DEFAULT_PAD_VAL_MASK = 0
@@ -16,74 +16,77 @@ DEFAULT_PAD_VAL_MASK = 0
 
 class RandomResize(DualTransform):
     """
-    Randomly apply one of several resize methods, including Letterbox.
+    Randomly apply one of several resize methods (including Letterbox) to an image.
 
     Args:
-        height (int): Target height for resizing.
-        width (int): Target width for resizing.
-        scale (float): Scale factor for additional size variation.
-        interpolations (List[str]): List of interpolation methods to use.
-        include_letterbox (bool): Whether to include Letterbox in resize options.
-        letterbox_pad_val (int): Padding value for Letterbox (for image).
-        letterbox_pad_val_mask (int): Padding value for Letterbox (for mask).
-        always_apply (bool): Whether to always apply the transform.
-        p (float): Probability of applying the transform.
+        height (int): Target height.
+        width (int): Target width.
+        interpolations (list[int]): List of OpenCV interpolation methods (e.g., [cv2.INTER_LINEAR, ...]).
+        letterbox_pad_val (int): Padding value for image in Letterbox.
+        letterbox_pad_val_mask (int): Padding value for mask in Letterbox.
+        always_apply (bool): If True, apply transform always.
+        p (float): Probability of applying transform.
     """
 
-    def __init__(self, height: int = 768, width: int = 768, scale: float = 0.1,
-                 interpolations: list[str] = ['nearest', 'linear', 'cubic', 'area', 'lanczos'],
-                 letterbox_pad_val: int = DEFAULT_PAD_VAL, letterbox_pad_val_mask: int = DEFAULT_PAD_VAL_MASK,
-                 always_apply: bool = False, p: float = 0.5):
-        super().__init__()
+    def __init__(self,
+                 height: int = 768,
+                 width: int = 768,
+                 interpolations: list[int] = [cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_LANCZOS4],
+                 letterbox_pad_val: int = 0,
+                 letterbox_pad_val_mask: int = 0,
+                 always_apply: bool = False,
+                 p: float = 0.5):
+        super().__init__(always_apply, p)
         self.height = height
         self.width = width
-        self.scale = scale
         self.interpolations = interpolations
         self.letterbox_pad_val = letterbox_pad_val
         self.letterbox_pad_val_mask = letterbox_pad_val_mask
-        self.always_apply = always_apply
-        self.p = p
-        self.interpolation_methods: dict[str, int] = {'nearest': cv2.INTER_NEAREST, 'linear': cv2.INTER_LINEAR,
-                                                      'cubic': cv2.INTER_CUBIC, 'area': cv2.INTER_AREA,
-                                                      'lanczos': cv2.INTER_LANCZOS4}
         self._create_transforms()
 
     def _create_transforms(self):
-        """Create the list of resize transforms."""
-        self.resize_transforms = [A.Resize(height=self.height, width=self.width,
-                                           interpolation=self.interpolation_methods[interpolation])
-                                  for interpolation in self.interpolations]
-        self.resize_transforms.append(Letterbox(height=self.height, width=self.width,
+        """Create candidate resize transforms to choose from at call time."""
+        self.resize_transforms = [A.Resize(height=self.height,
+                                           width=self.width,
+                                           interpolation=interp) for interp in self.interpolations]
+
+        # Include Letterbox as an alternative resize method
+        self.resize_transforms.append(Letterbox(height=self.height,
+                                                width=self.width,
                                                 pad_val=self.letterbox_pad_val,
                                                 pad_val_mask=self.letterbox_pad_val_mask))
-        self.transform = A.OneOf(self.resize_transforms, p=1.0 if self.always_apply else self.p)
+        # Wrap all resize options under OneOf
+        self.transform = A.OneOf(self.resize_transforms, p=1.0)
 
-    def __call__(self, image: np.ndarray, **kwargs) -> np.ndarray:
-        """Apply the transform to an image."""
-        return self.transform(image=image, **kwargs)
+    def apply(self, img: np.ndarray, **params: Any) -> np.ndarray:
+        return self.transform(image=img, **params)["image"]
+
+    def apply_to_mask(self, mask: np.ndarray, **params: Any) -> np.ndarray:
+        return self.transform(image=mask, **params)["image"]
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
-        """Get the names of the arguments used in __init__."""
-        return ('height', 'width', 'scale', 'interpolations',)
+        return ('height', 'width', 'scale', 'interpolations', 'letterbox_pad_val', 'letterbox_pad_val_mask')
 
 
-class Letterbox(A.DualTransform):
+class Letterbox(DualTransform):
     """
-    Resize the input to the specified height and width while maintaining the aspect ratio.
-    Padding is added to the image to preserve the aspect ratio.
+    Resize the input to fit within the target (height, width) while preserving aspect ratio.
+    Adds padding to maintain target size. Supports image, mask, bboxes, keypoints.
 
     Args:
-        height (int): Desired height of the output image.
-        width (int): Desired width of the output image.
-        pad_val (int): Padding value for image if border_mode is cv2.BORDER_CONSTANT.
-        pad_val_mask (int): Padding value for mask if border_mode is cv2.BORDER_CONSTANT.
-        always_apply (bool): Whether to always apply the transform.
+        height (int): Target output height.
+        width (int): Target output width.
+        pad_val (int): Padding value for image.
+        pad_val_mask (int): Padding value for mask.
+        border_mode (int): Border mode for padding (OpenCV constant).
+        always_apply (bool): If True, always apply the transform.
         p (float): Probability of applying the transform.
     """
 
-    def __init__(self, height: int, width: int,
-                 pad_val: int = DEFAULT_PAD_VAL,
-                 pad_val_mask: int = DEFAULT_PAD_VAL_MASK,
+    def __init__(self,
+                 height: int, width: int,
+                 pad_val: int = 0, pad_val_mask: int = 0,
+                 border_mode: int = cv2.BORDER_CONSTANT,
                  always_apply: bool = False,
                  p: float = 1.0):
         super().__init__(always_apply, p)
@@ -91,151 +94,83 @@ class Letterbox(A.DualTransform):
         self.width = width
         self.pad_val = pad_val
         self.pad_val_mask = pad_val_mask
-
-    @staticmethod
-    def get_pad_size(size: int, target_size: int) -> tuple[int, int]:
-        """Calculate padding size for a given dimension."""
-        if size > target_size:
-            return 0, 0
-        pad = target_size - size
-        pad_a, pad_b = pad // 2, pad - pad // 2
-        return pad_a, pad_b
-
-    def update_params(self, params: dict[str, Any], **kwargs) -> dict[str, Any]:
-        """Update transform parameters."""
-        params = super().update_params(params, **kwargs)
-        h, w = params['rows'], params['cols']
-        scale = min(self.width / w, self.height / h)
-        target_h, target_w = int(h * scale), int(w * scale)
-
-        pad_top, pad_bottom = self.get_pad_size(target_h, self.height)
-        pad_left, pad_right = self.get_pad_size(target_w, self.width)
-
-        params.update({'scale': scale, 'target_h': target_h, 'target_w': target_w,
-                       'h_pad_top': pad_top, 'h_pad_bottom': pad_bottom,
-                       'w_pad_left': pad_left, 'w_pad_right': pad_right})
-        return params
+        self.border_mode = border_mode
 
     def get_transform_init_args_names(self):
-        return ('height', 'width', 'pad_val', 'pad_val_mask')
+        return ('height', 'width', 'pad_val', 'pad_val_mask', 'border_mode',)
 
-    def apply(self, img: np.ndarray, interpolation: int = cv2.INTER_LINEAR, **params) -> np.ndarray:
-        """Apply the transform to an image."""
-        img = gf.resize(img, params['target_h'], params['target_w'], interpolation)
-        return self._pad_image(img, params, self.pad_val)
+    def get_params(self) -> dict[str, Any]:
+        """ No random params needed, so return empty dict. """
+        return {}
 
-    def apply_to_mask(self, img: np.ndarray, **params) -> np.ndarray:
-        """Apply the transform to a mask."""
+    def get_params_dependent_on_data(self, params: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Compute resize scale and padding required to fit original image into target size.
+        """
+        h, w = data['image'].shape[:2]
+        scale = min(self.width / w, self.height / h)
+        new_w = int(w * scale)
+        new_h = int(h * scale)
 
-        ('mask:', params)
-        img = gf.resize(img, params['target_h'], params['target_w'], cv2.INTER_NEAREST)
-        return self._pad_image(img, params, self.pad_val_mask)
+        pad_w = self.width - new_w
+        pad_h = self.height - new_h
+        pad_left = pad_w // 2
+        pad_right = pad_w - pad_left
+        pad_top = pad_h // 2
+        pad_bottom = pad_h - pad_top
 
-    def apply_to_bbox(self, bbox: list[float], **params) -> list[float]:
-        """Apply the transform to a bounding box."""
-        h, w = params['target_h'], params['target_w']
-        x_min, y_min, x_max, y_max = bbox_utils.denormalize_bbox(bbox, h, w)
-        x_min, x_max = x_min + params['w_pad_left'], x_max + params['w_pad_left']
-        y_min, y_max = y_min + params['h_pad_top'], y_max + params['h_pad_top']
-        return bbox_utils.normalize_bbox((x_min, y_min, x_max, y_max),
-                                         h + params['h_pad_top'] + params['h_pad_bottom'],
-                                         w + params['w_pad_left'] + params['w_pad_right'])
+        return {'new_h': new_h, 'new_w': new_w,
+                'pad_top': pad_top, 'pad_bottom': pad_bottom,
+                'pad_left': pad_left, 'pad_right': pad_right,
+                'scale': scale}
 
-    def apply_to_keypoint(self, keypoint: tuple[float, float, float, float], **params) -> tuple[float, float, float, float]:
-        """Apply the transform to a keypoint."""
-        scale_x, scale_y = self.width / params['cols'], self.height / params['rows']
-        keypoint = gf.keypoint_scale(keypoint, scale_x, scale_y)
-        x, y, angle, scale = keypoint
-        return x + params['w_pad_left'], y + params['h_pad_top'], angle, scale
+    def apply(self, img: np.ndarray, new_h: int, new_w: int,
+              pad_top: int, pad_bottom: int,
+              pad_left: int, pad_right: int,
+              interpolation: int = cv2.INTER_LINEAR, **params) -> np.ndarray:
+        """
+        Apply resize and padding to image.
+        """
+        resized = resize(img, new_h, new_w, interpolation=interpolation)
+        return pad_with_params(resized, pad_top, pad_bottom, pad_left, pad_right,
+                               border_mode=self.border_mode, value=self.pad_val)
 
-    def _pad_image(self, img: np.ndarray, params: dict[str, Any], pad_val: int) -> np.ndarray:
-        """Pad the image with the specified value."""
-        return gf.pad_with_params(img=img,
-                                  h_pad_top=params['h_pad_top'], h_pad_bottom=params['h_pad_bottom'],
-                                  w_pad_left=params['w_pad_left'], w_pad_right=params['w_pad_right'],
-                                  border_mode=cv2.BORDER_CONSTANT, value=pad_val)
+    def apply_to_mask(self, img: np.ndarray, new_h: int, new_w: int,
+                      pad_top: int, pad_bottom: int,
+                      pad_left: int, pad_right: int,
+                      **params) -> np.ndarray:
+        """
+        Apply resize and padding to mask.
+        Use nearest interpolation for discrete label preservation.
+        """
+        resized = resize(img, new_h, new_w, interpolation=cv2.INTER_NEAREST)
+        return pad_with_params(resized, pad_top, pad_bottom, pad_left, pad_right,
+                               border_mode=self.border_mode, value=self.pad_val_mask)
 
-    def get_transform_init_args_names(self) -> tuple[str, ...]:
-        """Get the names of the arguments used in __init__."""
-        return ('height', 'width', 'pad_val', 'pad_val_mask')
+    def apply_to_bboxes(self, bboxes: np.ndarray, new_h: int, new_w: int,
+                        pad_top: int, pad_bottom: int,
+                        pad_left: int, pad_right: int,
+                        rows: int, cols: int, **params) -> np.ndarray:
+        """
+        Adjust bounding box coordinates after resize and padding.
+        Input bboxes are normalized in [0, 1] (x_min, y_min, x_max, y_max, ...)
+        """
+        denorm = denormalize_bboxes(bboxes, (rows, cols))
+        denorm[:, [0, 2]] *= new_w / cols
+        denorm[:, [1, 3]] *= new_h / rows
+        denorm[:, [0, 2]] += pad_left
+        denorm[:, [1, 3]] += pad_top
+        return normalize_bboxes(denorm, (self.height, self.width))
 
-
-class RandomResizeCrop(DualTransform):
-    def __init__(self, height: int, width: int, scale: float = 0.2, interpolation: int = cv2.INTER_LINEAR,
-                 border_mode: int = cv2.BORDER_CONSTANT, always_apply: bool = False, p: float = 1.0) -> None:
-        super().__init__(always_apply, p)
-        self.height = height
-        self.width = width
-        self.scale_limit: tuple[float, float] = (1.0 - scale, 1.0 + scale)
-        self.interpolation = interpolation
-        self.border_mode = border_mode
-        self.value: int = 0
-        self.mask_value: int = 0
-
-    def get_params(self):
-        return {'scale': random.uniform(self.scale_limit[0], self.scale_limit[1]),
-                'h_start': random.random(), 'w_start': random.random()}
-
-    def _calculate_padding(self, size: int, target_size: int) -> tuple[int, int]:
-        """Calculate padding for the given size to match the target size."""
-        if size < target_size:
-            pad_top: int = int((target_size - size) / 2.0)
-            pad_bottom: int = target_size - size - pad_top
-        else:
-            pad_top, pad_bottom = 0, 0
-        return pad_top, pad_bottom
-
-    def update_params(self, params: dict[str, Any], **kwargs: Any) -> dict[str, Any]:
-        params = super().update_params(params, **kwargs)
-        height: int = params['rows']
-        width: int = params['cols']
-        scale: float = params['scale']
-        rows, cols = int(height * scale), int(width * scale)
-        h_pad_top, h_pad_bottom = self._calculate_padding(rows, self.height)
-        w_pad_left, w_pad_right = self._calculate_padding(cols, self.width)
-
-        params.update({'rows': rows, 'cols': cols,
-                       'pad_top': h_pad_top, 'pad_bottom': h_pad_bottom,
-                       'pad_left': w_pad_left, 'pad_right': w_pad_right})
-        return params
-
-    def _resize_and_crop(self, img: np.ndarray, scale: float, h_start: float, w_start: float,
-                         pad_top: int, pad_bottom: int, pad_left: int, pad_right: int, interpolation: int) -> np.ndarray:
-        """Resize the image and apply cropping or padding."""
-        img = geo_f.scale(img, scale, interpolation)
-        if scale >= 1.0:
-            return crop_f.random_crop(img, self.height, self.width, h_start, w_start)
-        else:
-            return geo_f.pad_with_params(img, pad_top, pad_bottom, pad_left, pad_right,
-                                         border_mode=self.border_mode, value=self.value)
-
-    def apply(self, img: np.ndarray, **params: Any) -> np.ndarray:
-        return self._resize_and_crop(img, **params)
-
-    def apply_to_mask(self, img: np.ndarray, **params: Any) -> np.ndarray:
-        params['interpolation'] = cv2.INTER_NEAREST  # Always use nearest neighbor for masks
-        return self._resize_and_crop(img, **params)
-
-    def apply_to_bbox(self, bbox: tuple[float, float, float, float], scale: float,
-                      pad_top: int, pad_bottom: int, pad_left: int, pad_right: int,
-                      rows: int, cols: int, **params: Any) -> tuple[float, float, float, float]:
-        """Resize and pad bounding boxes."""
-        if scale >= 1.0:
-            return crop_f.bbox_random_crop(bbox, self.height, self.width, rows=rows, cols=cols, **params)
-        else:
-            x_min, y_min, x_max, y_max = bbox_utils.denormalize_bbox(bbox, rows, cols)
-            bbox = (x_min + pad_left, y_min + pad_top, x_max + pad_left, y_max + pad_top)
-            return bbox_utils.normalize_bbox(bbox, rows + pad_top + pad_bottom, cols + pad_left + pad_right)
-
-    def apply_to_keypoint(self, keypoint: tuple[float, float, float, float], scale: float,
-                          pad_top: int, pad_bottom: int, pad_left: int, pad_right: int, **params: Any) -> tuple[float, float, float, float]:
-        """Resize and pad keypoints."""
-        keypoint = geo_f.keypoint_scale(keypoint, scale, scale)
-        if scale >= 1.0:
-            return crop_f.keypoint_random_crop(keypoint, self.height, self.width, **params)
-        else:
-            x, y, angle, scale = keypoint
-            return x + pad_left, y + pad_top, angle, scale
-
-    def get_transform_init_args_names(self) -> tuple[str, ...]:
-        return ('height', 'width', 'scale_limit', 'interpolation',)
+    def apply_to_keypoints(self, keypoints: np.ndarray, new_h: int, new_w: int,
+                           pad_top: int, pad_bottom: int,
+                           pad_left: int, pad_right: int,
+                           cols: int, rows: int, **params) -> np.ndarray:
+        """
+        Adjust keypoints after resize and padding.
+        Keypoints are of shape (N, 5+) format: (x, y, z, angle, scale, ...)
+        """
+        scaled = keypoints_scale(keypoints, new_w / cols, new_h / rows)
+        scaled[:, 0] += pad_left  # x
+        scaled[:, 1] += pad_top   # y
+        return scaled
