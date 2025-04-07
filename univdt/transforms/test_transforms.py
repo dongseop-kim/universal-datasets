@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pytest
 
-from univdt.transforms.resize import Letterbox
+from univdt.transforms.resize import Letterbox, RandomResize
 
 
 @pytest.fixture
@@ -61,3 +61,46 @@ def test_letterbox_keypoints(dummy_data):
 
     assert new_kps.shape == keypoints.shape, "Keypoints shape should be preserved"
     assert not np.allclose(new_kps[:, :2], keypoints[:, :2]), "Keypoints should have changed location"
+
+
+@pytest.fixture
+def dummy_image():
+    return np.ones((120, 240, 3), dtype=np.uint8) * 255
+
+
+@pytest.fixture
+def dummy_mask():
+    return np.ones((120, 240), dtype=np.uint8)
+
+
+def test_random_resize_output_shape(dummy_image):
+    transform = RandomResize(height=256, width=256, p=1.0)
+    result = transform(image=dummy_image)
+    assert result.shape[:2] == (256, 256), "Image shape must match target resize"
+
+
+def test_random_resize_mask_shape(dummy_mask):
+    transform = RandomResize(height=256, width=256, p=1.0)
+    result = transform(image=dummy_mask)
+    assert result.shape[:2] == (256, 256), "Mask shape must match target resize"
+
+
+def test_random_resize_preserve_dtype(dummy_image):
+    transform = RandomResize(height=256, width=256, p=1.0)
+    result = transform(image=dummy_image)
+    assert result.dtype == dummy_image.dtype, "Image dtype must be preserved"
+
+
+def test_random_resize_variety(dummy_image):
+    transform = RandomResize(height=256, width=256, interpolations=[cv2.INTER_LINEAR], p=1.0)
+    result1 = transform(image=dummy_image)
+    result2 = transform(image=dummy_image)
+    # 두 번 모두 Resize만 사용했지만 결과가 항상 같을 필요는 없음 (seed 없이 실행하므로)
+    assert result1.shape == result2.shape, "All outputs should match target size"
+
+
+def test_random_resize_include_letterbox(dummy_image):
+    # Letterbox만 남겨서 적용 확인
+    transform = RandomResize(height=256, width=256, interpolations=[], p=1.0)
+    result = transform(image=dummy_image)
+    assert result.shape[:2] == (256, 256), "Letterbox should match target output size"

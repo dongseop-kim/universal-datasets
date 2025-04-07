@@ -65,7 +65,7 @@ class RandomResize(DualTransform):
         return self.transform(image=mask, **params)["image"]
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
-        return ('height', 'width', 'scale', 'interpolations', 'letterbox_pad_val', 'letterbox_pad_val_mask')
+        return ('height', 'width', 'interpolations', 'letterbox_pad_val', 'letterbox_pad_val_mask')
 
 
 class Letterbox(DualTransform):
