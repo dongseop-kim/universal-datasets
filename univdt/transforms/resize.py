@@ -34,9 +34,8 @@ class RandomResize(DualTransform):
                  interpolations: list[int] = [cv2.INTER_LINEAR, cv2.INTER_CUBIC, cv2.INTER_LANCZOS4],
                  letterbox_pad_val: int = 0,
                  letterbox_pad_val_mask: int = 0,
-                 always_apply: bool = False,
                  p: float = 0.5):
-        super().__init__(always_apply, p)
+        super().__init__(p)
         self.height = height
         self.width = width
         self.interpolations = interpolations
@@ -87,9 +86,8 @@ class Letterbox(DualTransform):
                  height: int, width: int,
                  pad_val: int = 0, pad_val_mask: int = 0,
                  border_mode: int = cv2.BORDER_CONSTANT,
-                 always_apply: bool = False,
                  p: float = 1.0):
-        super().__init__(always_apply, p)
+        super().__init__(p)
         self.height = height
         self.width = width
         self.pad_val = pad_val

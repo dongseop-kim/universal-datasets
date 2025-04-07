@@ -30,7 +30,6 @@ class RandomWindowing(ImageOnlyTransform):
         width_range (float): width range. width_param - width_range/2 ~ width_param + width_range/2
                              if width_param = 4.0, width_range = 1.0, then width_param = 3.5 ~ 4.5
         use_median (bool): use median or not
-        always_apply (bool): always apply or not
         p (float): probability
     """
     class InitSchema(BaseModel):
