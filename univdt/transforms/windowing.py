@@ -1,5 +1,3 @@
-from pydantic import BaseModel, Field
-from albumentations.core.validation import ValidatedTransformMeta
 import numpy as np
 from albumentations.core.transforms_interface import ImageOnlyTransform
 
@@ -32,11 +30,6 @@ class RandomWindowing(ImageOnlyTransform):
         use_median (bool): use median or not
         p (float): probability
     """
-    class InitSchema(BaseModel):
-        width_param: float = Field(default=4.0)
-        width_range: float = Field(default=1.0)
-        use_median: bool = Field(default=True)
-        p: float = Field(default=0.5, ge=0.0, le=1.0)
 
     def __init__(self,
                  width_param: float = 4.0,

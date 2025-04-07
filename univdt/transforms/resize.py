@@ -40,38 +40,42 @@ class RandomResize(DualTransform):
         self.interpolations = interpolations
         self.letterbox_pad_val = letterbox_pad_val
         self.letterbox_pad_val_mask = letterbox_pad_val_mask
-        self._create_transforms()
+        self.transforms = self._create_transforms()
 
     def _create_transforms(self):
         """Create candidate resize transforms to choose from at call time."""
-        self.resize_transforms = [A.Resize(height=self.height,
-                                           width=self.width,
-                                           interpolation=interp) for interp in self.interpolations]
+        self.resize_transforms = []
+        self.resize_transforms.append(A.OneOf([A.Resize(height=self.height,
+                                                        width=self.width,
+                                                        interpolation=interp) for interp in self.interpolations],
+                                              p=1.0))
 
         # Include Letterbox as an alternative resize method
         self.resize_transforms.append(Letterbox(height=self.height,
                                                 width=self.width,
                                                 pad_val=self.letterbox_pad_val,
-                                                pad_val_mask=self.letterbox_pad_val_mask))
+                                                pad_val_mask=self.letterbox_pad_val_mask,
+                                                p=1.0))
         # Wrap all resize options under OneOf
-        self.transform = A.OneOf(self.resize_transforms, p=1.0)
+        transforms = A.OneOf(self.resize_transforms, p=self.p)
+        return transforms
 
     def apply(self, img: np.ndarray, **params: Any) -> np.ndarray:
-        return self.transform(image=img, **params)["image"]
+        return self.transforms(image=img, **params)["image"]
 
     def apply_to_bboxes(self, bboxes: list[list[float]], **params: Any) -> list[list[float]]:
         """Apply resize or letterbox transform to bounding boxes."""
-        transformed = self.transform(bboxes=bboxes, **params)
+        transformed = self.transforms(bboxes=bboxes, **params)
         return transformed['bboxes']
 
     def apply_to_masks(self, masks, *args, **params):
         """Apply resize or letterbox transform to masks."""
-        transformed = self.transform(masks=masks, **params)
+        transformed = self.transforms(masks=masks, **params)
         return transformed['masks']
 
     def apply_to_keypoints(self, keypoints: list[list[float]], **params: Any) -> list[list[float]]:
         """Apply resize or letterbox transform to keypoints."""
-        transformed = self.transform(keypoints=keypoints, **params)
+        transformed = self.transforms(keypoints=keypoints, **params)
         return transformed['keypoints']
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
