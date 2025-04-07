@@ -24,7 +24,6 @@ class RandomResize(DualTransform):
         interpolations (list[int]): List of OpenCV interpolation methods (e.g., [cv2.INTER_LINEAR, ...]).
         letterbox_pad_val (int): Padding value for image in Letterbox.
         letterbox_pad_val_mask (int): Padding value for mask in Letterbox.
-        always_apply (bool): If True, apply transform always.
         p (float): Probability of applying transform.
     """
 
@@ -60,8 +59,20 @@ class RandomResize(DualTransform):
     def apply(self, img: np.ndarray, **params: Any) -> np.ndarray:
         return self.transform(image=img, **params)["image"]
 
-    def apply_to_mask(self, mask: np.ndarray, **params: Any) -> np.ndarray:
-        return self.transform(image=mask, **params)["image"]
+    def apply_to_bboxes(self, bboxes: list[list[float]], **params: Any) -> list[list[float]]:
+        """Apply resize or letterbox transform to bounding boxes."""
+        transformed = self.transform(bboxes=bboxes, **params)
+        return transformed['bboxes']
+
+    def apply_to_masks(self, masks, *args, **params):
+        """Apply resize or letterbox transform to masks."""
+        transformed = self.transform(masks=masks, **params)
+        return transformed['masks']
+
+    def apply_to_keypoints(self, keypoints: list[list[float]], **params: Any) -> list[list[float]]:
+        """Apply resize or letterbox transform to keypoints."""
+        transformed = self.transform(keypoints=keypoints, **params)
+        return transformed['keypoints']
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
         return ('height', 'width', 'interpolations', 'letterbox_pad_val', 'letterbox_pad_val_mask')
