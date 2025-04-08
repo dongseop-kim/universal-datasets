@@ -61,8 +61,8 @@ class RandomResize(DualTransform):
     def __call__(self, force_apply=False, **data):
         if self.debug:
             logger.debug(f"RandomResize.__call__ invoked with force_apply={force_apply}")
-            if "image" in data:
-                img_shape = data["image"].shape
+            if 'image' in data:
+                img_shape = data['image'].shape
                 logger.debug(f"Input image shape: {img_shape}")
 
         if not self.should_apply(force_apply=force_apply):
@@ -73,7 +73,7 @@ class RandomResize(DualTransform):
         use_resize = random.random() < 0.5
 
         if self.debug:
-            transform_type = "resize with interpolation" if use_resize else "letterbox resize"
+            transform_type = 'resize with interpolation' if use_resize else 'letterbox resize'
             logger.debug(f"Selected transform type: {transform_type}")
 
         if use_resize:
@@ -93,13 +93,13 @@ class RandomResize(DualTransform):
             # Apply letterbox resize
             data = self._resize_transforms2(**data)
 
-        if self.debug and "image" in data:
+        if self.debug and 'image' in data:
             logger.debug(f"Output image shape: {data['image'].shape}")
 
         return data
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
-        return ("height", "width", "interpolations", "letterbox_pad_val", "letterbox_pad_val_mask", "debug")
+        return ('height', 'width', 'interpolations', 'letterbox_pad_val', 'letterbox_pad_val_mask', 'debug')
 
 
 class Letterbox(DualTransform):
@@ -144,12 +144,12 @@ class Letterbox(DualTransform):
                 logger.addHandler(handler)
 
             # Get border mode name for better logging
-            border_mode_name = {cv2.BORDER_CONSTANT: "BORDER_CONSTANT",
-                                cv2.BORDER_REPLICATE: "BORDER_REPLICATE",
-                                cv2.BORDER_REFLECT: "BORDER_REFLECT",
-                                cv2.BORDER_WRAP: "BORDER_WRAP",
-                                cv2.BORDER_REFLECT_101: "BORDER_REFLECT_101"
-                                }.get(border_mode, f"Unknown ({border_mode})")
+            border_mode_name = {cv2.BORDER_CONSTANT: 'BORDER_CONSTANT',
+                                cv2.BORDER_REPLICATE: 'BORDER_REPLICATE',
+                                cv2.BORDER_REFLECT: 'BORDER_REFLECT',
+                                cv2.BORDER_WRAP: 'BORDER_WRAP',
+                                cv2.BORDER_REFLECT_101: 'BORDER_REFLECT_101'
+                                }.get(border_mode, f'Unknown ({border_mode})')
 
             logger.debug(f"Initialized Letterbox: height={height}, width={width}, "
                          f"pad_val={pad_val}, pad_val_mask={pad_val_mask}, "
@@ -163,7 +163,7 @@ class Letterbox(DualTransform):
 
     def get_params_dependent_on_data(self, params: dict[str, Any],
                                      data: dict[str, Any]) -> dict[str, Any]:
-        image: np.ndarray = data["image"]
+        image: np.ndarray = data['image']
         h, w = image.shape[:2]
         scale = min(self.width / w, self.height / h)
         new_w = int(w * scale)
