@@ -9,6 +9,16 @@ from albumentations.core.transforms_interface import DualTransform
 logger = logging.getLogger(__name__)
 
 
+def clamp_bbox_xyxy(bbox: tuple[float, float, float, float],
+                    image_shape: tuple[int, int]) -> list[float]:
+    x1, y1, x2, y2 = bbox
+    h, w = image_shape[:2]
+    return [max(0, min(x1, w)),
+            max(0, min(y1, h)),
+            max(0, min(x2, w)),
+            max(0, min(y2, h)),]
+
+
 class RandomTranslation(DualTransform):
     """
     Apply random translation (x and/or y) to the image using Albumentations.Affine.
@@ -83,4 +93,13 @@ class RandomTranslation(DualTransform):
                           fit_output=self.keep_box,
                           p=1.0  # 이미 확률 체크 후 호출되므로 무조건 적용
                           )
-        return affine(**data)
+        result = affine(**data)
+
+        # ⚠️ bbox 클램핑 추가
+        if 'bboxes' in result:
+            image_shape = result['image'].shape
+            result['bboxes'] = [clamp_bbox_xyxy(bbox, image_shape) for bbox in result['bboxes']]
+            if self.debug:
+                logger.debug(f" - Clamped {len(result['bboxes'])} bboxes to image bounds.")
+
+        return result
