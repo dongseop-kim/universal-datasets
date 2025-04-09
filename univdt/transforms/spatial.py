@@ -1,3 +1,4 @@
+from typing import Any, Literal, Tuple
 import logging
 import random
 from typing import Any
@@ -101,3 +102,79 @@ class RandomTranslation(DualTransform):
                 logger.debug(f" - Clamped {len(result['bboxes'])} bboxes to image bounds.")
 
         return result
+
+
+logger = logging.getLogger(__name__)
+
+
+class RandomZoom(DualTransform):
+    """
+    Random zoom-in/out using Albumentations.Affine under the hood.
+    Keeps image size the same by applying either padding or cropping.
+
+    Args:
+        scale (float | tuple[float, float]): Zoom range. If float s, range is (1-s, 1+s).
+        keep_ratio (bool): Whether to preserve aspect ratio during zoom.
+        keep_bbox (bool): Whether to fit output to keep bbox area after zooming out.
+        fill (int): Padding value for image.
+        fill_mask (int): Padding value for mask.
+        interpolation (int): Interpolation for image.
+        debug (bool): Enable debug logs.
+        p (float): Probability of applying transform.
+    """
+
+    def __init__(self,
+                 scale: float | Tuple[float, float] = 0.1,
+                 keep_ratio: bool = True,
+                 keep_bbox: bool = False,
+                 fill: int = 0,
+                 fill_mask: int = 0,
+                 interpolation: int = cv2.INTER_LINEAR,
+                 debug: bool = False,
+                 p: float = 1.0):
+        super().__init__(p=p)
+
+        # scale normalization
+        if isinstance(scale, float):
+            scale = (1 - scale, 1 + scale)
+        scale_dict = {"x": scale, "y": scale}
+
+        self.affine = A.Affine(scale=scale_dict,
+                               translate_percent=None,
+                               rotate=0.0,
+                               shear={"x": (0.0, 0.0), "y": (0.0, 0.0)},
+                               interpolation=interpolation,
+                               mask_interpolation=cv2.INTER_NEAREST,
+                               fit_output=keep_bbox,
+                               keep_ratio=keep_ratio,
+                               rotate_method="largest_box",
+                               balanced_scale=False,
+                               fill=fill,
+                               fill_mask=fill_mask,
+                               border_mode=cv2.BORDER_CONSTANT,
+                               p=1.0  # apply manually
+                               )
+
+        self.debug = debug
+
+        if self.debug:
+            logger.setLevel(logging.DEBUG)
+            logger.debug("Initialized SafeRandomZoom with parameters:")
+            logger.debug(f" - scale: {scale_dict}")
+            logger.debug(f" - keep_ratio: {keep_ratio}, keep_bbox: {keep_bbox}")
+            logger.debug(f" - fill: {fill}, fill_mask: {fill_mask}, interpolation: {interpolation}")
+
+    def __call__(self, force_apply=False, **data: Any) -> dict[str, Any]:
+        if not self.should_apply(force_apply):
+            if self.debug:
+                logger.debug("SafeRandomZoom skipped (should_apply=False)")
+            return data
+
+        if self.debug:
+            shape = data["image"].shape
+            logger.debug(f"Applying SafeRandomZoom to image of shape: {shape}")
+
+        return self.affine(**data)
+
+    def get_transform_init_args_names(self) -> tuple[str, ...]:
+        return ("scale", "keep_ratio", "fill", "fill_mask", "interpolation")
