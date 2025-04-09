@@ -10,6 +10,7 @@ from .pixel import (RandAugmentPixel, random_blur, random_brightness,
                     random_noise)
 from .ratio import RandomRatio
 from .resize import Letterbox, RandomResize
+from .spatial import RandomTranslation
 from .windowing import RandomWindowing
 
 # 통합 transform registry
@@ -20,6 +21,7 @@ AVAILABLE_TRANSFORMS: dict[str, Any] = {'resize': A.Resize,
                                         'random_resize': RandomResize,
                                         'random_windowing': RandomWindowing,
                                         'random_pixel_aug': RandAugmentPixel,
+                                        'random_translation': RandomTranslation,
                                         }
 
 # 픽셀 기반 transform 추가
