@@ -7,14 +7,15 @@ import cv2
 from albumentations.core.transforms_interface import DualTransform
 
 logger = logging.getLogger(__name__)
+eps = 1e-6
 
 
 def clamp_bbox_xyxy(bbox: tuple[float, float, float, float]) -> list[float]:
     x1, y1, x2, y2 = bbox
-    return [max(0, min(x1, 1)),
-            max(0, min(y1, 1)),
-            max(0, min(x2, 1)),
-            max(0, min(y2, 1)),]
+    return [max(0, min(x1, 1.0-eps)),
+            max(0, min(y1, 1.0-eps)),
+            max(0, min(x2, 1.0-eps)),
+            max(0, min(y2, 1.0-eps))]
 
 
 class RandomTranslation(DualTransform):
