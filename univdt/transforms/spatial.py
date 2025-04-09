@@ -97,7 +97,7 @@ class RandomTranslation(DualTransform):
 
         # ⚠️ bbox 클램핑 추가
         if 'bboxes' in result:
-            result['bboxes'] = [clamp_bbox_xyxy(bbox) for bbox in result['bboxes']]
+            result['bboxes'] = np.array([clamp_bbox_xyxy(bbox) for bbox in result['bboxes']])
             if self.debug:
                 logger.debug(f" - Clamped {len(result['bboxes'])} bboxes to image bounds.")
 
