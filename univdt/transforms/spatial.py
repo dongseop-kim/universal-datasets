@@ -1,10 +1,10 @@
-from typing import Any, Literal, Tuple
 import logging
 import random
-from typing import Any
+from typing import Any, Literal, Tuple
 
 import albumentations as A
 import cv2
+import numpy as np
 from albumentations.core.transforms_interface import DualTransform
 
 logger = logging.getLogger(__name__)
@@ -114,6 +114,19 @@ class RandomZoom(DualTransform):
 
     Args:
         scale (float | tuple[float, float]): Zoom range. If float s, range is (1-s, 1+s).
+            - Values < 1.0 → Zoom-out: image is downscaled and padded to original size.
+            - Values > 1.0 → Zoom-in: image is upscaled and randomly cropped to original size.
+            - If a single float `s` is provided, the scale range is interpreted as (1 - s, 1 + s).
+            - If a tuple (min, max) is provided, a value is sampled uniformly from that range.
+
+            Example:
+                scale=0.1 → random scale between 0.9 and 1.1
+                scale=(0.8, 1.2) → random scale between 0.8 and 1.2
+
+            NOTE:
+                - This transform preserves the output size.
+                - Padding uses `fill`, cropping is random (top-left offset).
+
         keep_ratio (bool): Whether to preserve aspect ratio during zoom.
         keep_bbox (bool): Whether to fit output to keep bbox area after zooming out.
         fill (int): Padding value for image.
@@ -174,7 +187,15 @@ class RandomZoom(DualTransform):
             shape = data["image"].shape
             logger.debug(f"Applying SafeRandomZoom to image of shape: {shape}")
 
-        return self.affine(**data)
+        result = self.affine(**data)
+
+        # ✅ bbox 클램핑
+        if 'bboxes' in result:
+            result['bboxes'] = np.array([clamp_bbox_xyxy(bbox) for bbox in result['bboxes']])
+            if self.debug:
+                logger.debug(f" - Clamped {len(result['bboxes'])} bboxes to image bounds.")
+
+        return result
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
         return ("scale", "keep_ratio", "fill", "fill_mask", "interpolation")
