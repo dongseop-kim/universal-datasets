@@ -9,14 +9,12 @@ from albumentations.core.transforms_interface import DualTransform
 logger = logging.getLogger(__name__)
 
 
-def clamp_bbox_xyxy(bbox: tuple[float, float, float, float],
-                    image_shape: tuple[int, int]) -> list[float]:
+def clamp_bbox_xyxy(bbox: tuple[float, float, float, float]) -> list[float]:
     x1, y1, x2, y2 = bbox
-    h, w = image_shape[:2]
-    return [max(0, min(x1, w)),
-            max(0, min(y1, h)),
-            max(0, min(x2, w)),
-            max(0, min(y2, h)),]
+    return [max(0, min(x1, 1)),
+            max(0, min(y1, 1)),
+            max(0, min(x2, 1)),
+            max(0, min(y2, 1)),]
 
 
 class RandomTranslation(DualTransform):
@@ -97,8 +95,7 @@ class RandomTranslation(DualTransform):
 
         # ⚠️ bbox 클램핑 추가
         if 'bboxes' in result:
-            image_shape = result['image'].shape
-            result['bboxes'] = [clamp_bbox_xyxy(bbox, image_shape) for bbox in result['bboxes']]
+            result['bboxes'] = [clamp_bbox_xyxy(bbox) for bbox in result['bboxes']]
             if self.debug:
                 logger.debug(f" - Clamped {len(result['bboxes'])} bboxes to image bounds.")
 
