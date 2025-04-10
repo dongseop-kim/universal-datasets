@@ -1,7 +1,9 @@
-import numpy as np
 import logging
 
+import numpy as np
 from albumentations.core.transforms_interface import ImageOnlyTransform
+
+from univdt.transforms.pixel import Invert
 
 # 모듈 수준에서 로거 설정
 logger = logging.getLogger(__name__)
@@ -14,6 +16,20 @@ def configure_logging(debug=False):
     # 루트 로거 설정
     logging.basicConfig(level=level,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+
+def min_max_normalize(image: np.ndarray) -> np.ndarray:
+    """
+    Normalize the image to the range [0, 1].
+    Args:
+        image (np.ndarray): The input image.
+
+    Returns:
+        np.ndarray: The normalized image.
+    """
+    min_val = image.min()
+    max_val = image.max()
+    return (image - min_val) / (max_val - min_val + 1e-6)
 
 
 def windowing(image: np.ndarray, use_median: bool = False, width_param: float = 4.0) -> np.ndarray:
@@ -123,14 +139,123 @@ class RandomWindowing(ImageOnlyTransform):
         return super().__call__(*args, **kwargs)
 
 
-# 사용 예시
-if __name__ == "__main__":
-    # 로깅 설정
-    configure_logging(debug=True)
+class RandomWindowingInvert(ImageOnlyTransform):
+    """
+    Apply RandomWindowing and/or Invert with independent probabilities.
 
-    # 변환 생성
-    transform = RandomWindowing(width_param=4.0, width_range=2.0, use_median=True, p=1.0, debug=True)
+    Args:
+        windowing_prob (float): Probability to apply RandomWindowing.
+        invert_prob (float): Probability to apply Invert.
+        windowing_kwargs (dict): Arguments to initialize RandomWindowing.
+        invert_kwargs (dict): Arguments to initialize Invert.
+        p (float): Overall probability of applying this transform.
+        debug (bool): Enable debug logging.
+    """
 
-    # 테스트 이미지로 변환 적용
-    sample_img = np.random.randint(0, 256, (100, 100), dtype=np.uint8)
-    result = transform(image=sample_img)
+    def __init__(self,
+                 windowing_prob: float = 0.5,
+                 invert_prob: float = 0.5,
+                 width_param: float = 4.0,
+                 width_range: float = 1.0,
+                 use_median: bool = True,
+                 p: float = 1.0,
+                 debug: bool = False):
+        super().__init__(p=p)
+        self.windowing_prob = windowing_prob
+        self.invert_prob = invert_prob
+
+        self.width_param = width_param
+        self.width_range = width_range
+        self.use_median = use_median
+
+        self.debug = debug
+
+        if debug:
+            logger.debug(f"Initializing RandomWindowingAndInvert with:")
+            logger.debug(f"  windowing_prob: {windowing_prob}")
+            logger.debug(f"  invert_prob: {invert_prob}")
+            logger.debug(f"  width_param: {width_param}")
+            logger.debug(f"  width_range: {width_range}")
+            logger.debug(f"  use_median: {use_median}")
+
+        self.windowing = RandomWindowing(p=1.0, debug=debug,
+                                         width_param=width_param,
+                                         width_range=width_range,
+                                         use_median=use_median)
+        self.invert = Invert(p=1.0, debug=debug)
+
+    def apply(self, img: np.ndarray, **params) -> np.ndarray:
+        if self.debug:
+            logger.debug(f"Applying RandomWindowingAndInvert to image with shape {img.shape}")
+
+        if np.random.rand() < self.windowing_prob:
+            if self.debug:
+                logger.debug("Applying RandomWindowing")
+            img = self.windowing.apply(img, **params)
+
+        if np.random.rand() < self.invert_prob:
+            if self.debug:
+                logger.debug("Applying Invert")
+            img = self.invert.apply(img, **params)
+
+        return img
+
+    def get_transform_init_args_names(self) -> tuple[str, ...]:
+        return ('windowing_prob', 'invert_prob', 'debug')
+
+
+class HighlightTripleView(ImageOnlyTransform):
+    """
+    Create a 3-channel visualization:
+        - Channel 0: bright-enhanced view using log scaling
+        - Channel 1: original image (or pre_aug-applied image)
+        - Channel 2: dark-enhanced view using gamma
+
+    Args:
+        pre_aug (ImageOnlyTransform, optional): Pre-processing transform applied before highlight operations (e.g. invert)
+        p (float): Probability of applying the whole transform.
+        debug (bool): Enable debug logging.
+    """
+
+    def __init__(self,
+                 scale: float = 1.0,
+                 gamma: float = 2.0,
+                 p: float = 1.0, debug: bool = False):
+        super().__init__(p=p)
+        self.scale = scale
+        self.gamma = gamma
+        self.debug = debug
+        if self.debug:
+            logger.debug(f"HighlightTripleView initialized with pre_aug: {type()}")
+
+    def apply(self, img: np.ndarray, **params) -> np.ndarray:
+        if self.debug:
+            logger.debug(
+                f"Input image shape: {img.shape}, dtype: {img.dtype}, min: {img.min():.2f}, max: {img.max():.2f}")
+
+        img = min_max_normalize(img)
+        img = (img * 255.0).astype(np.uint8)  # Convert to uint8 for visualization
+        bright_view = self._highlight_bright_regions(img, scale=self.scale)
+        dark_view = self._highlight_dark_regions(img, gamma=self.gamma)
+
+        stacked = np.stack([bright_view, img, dark_view], axis=-1)
+
+        if self.debug:
+            logger.debug(f"Stacked output shape: {stacked.shape}, dtype: {stacked.dtype}")
+
+        return stacked
+
+    def get_transform_init_args_names(self) -> tuple[str, ...]:
+        return ('pre_aug', 'debug')
+
+    def _highlight_bright_regions(self, x: np.ndarray, scale=1.0) -> np.ndarray:
+        x_norm = x.astype(np.float32) / 255.0
+        result = np.log1p(x_norm * scale)
+        result = min_max_normalize(result)
+        return (result * 255).astype(np.uint8)
+
+    def _highlight_dark_regions(self, x: np.ndarray, gamma=2.0) -> np.ndarray:
+        x_safe = np.clip(x, 1, 255)
+        result = np.power(x_safe, gamma)
+        result = min_max_normalize(result)
+        return (result * 255).astype(np.uint8)

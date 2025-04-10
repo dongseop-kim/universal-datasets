@@ -104,9 +104,6 @@ class RandomTranslation(DualTransform):
         return result
 
 
-logger = logging.getLogger(__name__)
-
-
 class RandomZoom(DualTransform):
     """
     Random zoom-in/out using Albumentations.Affine under the hood.

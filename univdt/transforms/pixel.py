@@ -395,6 +395,64 @@ AVAILABLE_TRANSFORMS = {'random_blur': random_blur,
                         }
 
 
+class RandomWindowingAndInvert(ImageOnlyTransform):
+    """
+    Apply RandomWindowing and/or Invert with independent probabilities.
+
+    Args:
+        windowing_prob (float): Probability to apply RandomWindowing.
+        invert_prob (float): Probability to apply Invert.
+        windowing_kwargs (dict): Arguments to initialize RandomWindowing.
+        invert_kwargs (dict): Arguments to initialize Invert.
+        p (float): Overall probability of applying this transform.
+        debug (bool): Enable debug logging.
+    """
+
+    def __init__(self,
+                 windowing_prob: float = 0.5,
+                 invert_prob: float = 0.5,
+                 windowing_kwargs: dict = None,
+                 invert_kwargs: dict = None,
+                 p: float = 1.0,
+                 debug: bool = False):
+        super().__init__(p=p)
+        self.windowing_prob = windowing_prob
+        self.invert_prob = invert_prob
+        self.debug = debug
+
+        windowing_kwargs = windowing_kwargs or {}
+        invert_kwargs = invert_kwargs or {}
+
+        if debug:
+            logger.debug(f"Initializing RandomWindowingAndInvert with:")
+            logger.debug(f"  windowing_prob: {windowing_prob}")
+            logger.debug(f"  invert_prob: {invert_prob}")
+            logger.debug(f"  windowing_kwargs: {windowing_kwargs}")
+            logger.debug(f"  invert_kwargs: {invert_kwargs}")
+
+        self.windowing = RandomWindowing(p=1.0, debug=debug, **windowing_kwargs)
+        self.invert = Invert(p=1.0, debug=debug, **invert_kwargs)
+
+    def apply(self, img: np.ndarray, **params) -> np.ndarray:
+        if self.debug:
+            logger.debug(f"Applying RandomWindowingAndInvert to image with shape {img.shape}")
+
+        if np.random.rand() < self.windowing_prob:
+            if self.debug:
+                logger.debug("Applying RandomWindowing")
+            img = self.windowing.apply(img, **params)
+
+        if np.random.rand() < self.invert_prob:
+            if self.debug:
+                logger.debug("Applying Invert")
+            img = self.invert.apply(img, **params)
+
+        return img
+
+    def get_transform_init_args_names(self) -> tuple[str, ...]:
+        return ('windowing_prob', 'invert_prob', 'debug')
+
+
 class RandAugmentPixel(ImageOnlyTransform):
     """
     Apply multiple random pixel-level augmentations with configurable strength.
