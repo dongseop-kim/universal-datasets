@@ -11,7 +11,8 @@ from .pixel import (RandAugmentPixel, random_blur, random_brightness,
 from .ratio import RandomRatio
 from .resize import Letterbox, RandomResize
 from .spatial import RandomTranslation, RandomZoom
-from .windowing import RandomWindowing
+from .windowing import (HighlightTripleView, RandomWindowing,
+                        RandomWindowingInvert)
 
 # 통합 transform registry
 AVAILABLE_TRANSFORMS: dict[str, Any] = {'resize': A.Resize,
@@ -23,6 +24,8 @@ AVAILABLE_TRANSFORMS: dict[str, Any] = {'resize': A.Resize,
                                         'random_pixel_aug': RandAugmentPixel,
                                         'random_translation': RandomTranslation,
                                         'random_zoom': RandomZoom,
+                                        'random_windowing_invert': RandomWindowingInvert,
+                                        'highlight_triple_view': HighlightTripleView,
                                         }
 
 # 픽셀 기반 transform 추가
