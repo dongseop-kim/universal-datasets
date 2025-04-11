@@ -131,26 +131,21 @@ def random_blur(magnitude: float = 0.2, p: float = 1.0, debug: bool = False):
         logger.debug(f"Glass blur - sigma: {glass_sigma}, delta: {glass_delta}, iterations: {glass_iter}")
         logger.debug(f"Advanced blur - beta_limit: {beta_limit}, sigma_xy: {sigma_xy}")
 
-    return A.OneOf([A.Blur(blur_limit=blur_limit, p=1.0),
-                    A.GaussianBlur(blur_limit=blur_limit,
-                                   sigma_limit=sigma_limit, p=1.0),
-                    A.MotionBlur(blur_limit=blur_limit,
-                                 angle_range=angle_range,
-                                 direction_range=direction_range,
-                                 allow_shifted=True, p=1.0),
-                    A.MedianBlur(blur_limit=blur_limit, p=1.0),
-                    A.GlassBlur(sigma=glass_sigma,
-                                max_delta=glass_delta,
-                                iterations=glass_iter,
-                                mode="fast", p=1.0),
-                    A.AdvancedBlur(blur_limit=blur_limit,
-                                   sigma_x_limit=sigma_xy,
-                                   sigma_y_limit=sigma_xy,
-                                   beta_limit=beta_limit,
-                                   noise_limit=noise_limit,
-                                   rotate_limit=rotate_limit,
-                                   p=1.0)],
-                   p=p)
+    transforms = [A.Blur(blur_limit=blur_limit, p=1.0),
+                  A.GaussianBlur(blur_limit=blur_limit,
+                                 sigma_limit=sigma_limit, p=1.0),
+                  A.MotionBlur(blur_limit=blur_limit,
+                               angle_range=angle_range,
+                               direction_range=direction_range,
+                               allow_shifted=True, p=1.0),
+                  A.MedianBlur(blur_limit=blur_limit, p=1.0),
+                  # 너무 느림
+                  #   A.GlassBlur(sigma=glass_sigma, max_delta=glass_delta, iterations=glass_iter, mode="fast", p=1.0),
+                  #   A.AdvancedBlur(blur_limit=blur_limit, sigma_x_limit=sigma_xy, sigma_y_limit=sigma_xy,
+                  #                  beta_limit=beta_limit, noise_limit=noise_limit, rotate_limit=rotate_limit, p=1.0)
+                  ]
+
+    return A.OneOf(transforms, p=p)
 
 
 def random_brightness(magnitude: float = 0.2, p: float = 1.0, debug: bool = False):
@@ -244,14 +239,15 @@ def random_noise(magnitude: float = 0.2, p: float = 1.0, debug: bool = False):
     m = magnitude * 0.5  # scale factor
     multiplicative_noise = A.MultiplicativeNoise(multiplier=(1 - m, 1 + m),
                                                  per_channel=False,
-                                                 elementwise=True, p=1.0)
+                                                 elementwise=False,  # True 하면 느림
+                                                 p=1.0)
 
     # ===== Shot (Poisson) noise =====
     # Poisson noise is scale-dependent. Higher scale → more noise.
     # Rule: magnitude = 1.0 → scale_range = (0.1, 1.1)
     # Reason: scale ~ inverse of photon count (higher = noisier)
     poisson_scale = 1.0 * magnitude  # conservative scaling
-    shot_noise = A.ShotNoise(scale_range=(0.1, 0.1 + poisson_scale), p=1.0)
+    poisson_noise = A.ShotNoise(scale_range=(0.1, 0.1 + poisson_scale), p=1.0)
 
     """
     support only 3 channels
@@ -298,8 +294,15 @@ def random_noise(magnitude: float = 0.2, p: float = 1.0, debug: bool = False):
         logger.debug(f"  Salt and Pepper: amount=(0.01, {amount_max:.2f}), salt_vs_pepper=(0.45, 0.55)")
         logger.debug(f"  Additive noise: uniform ranges={uniform_ranges}")
 
-    return A.OneOf([gaussian_noise, multiplicative_noise, shot_noise,
-                    salt_and_pepper, additive_noise], p=p)
+    transforms = [gaussian_noise,
+                  multiplicative_noise,
+                  #   poisson_noise,
+                  #   iso_noise,  # only 3 channels supported
+                  #   salt_and_pepper, # 느림
+                  #   additive_noise  # slow
+                  ]
+
+    return A.OneOf(transforms, p=p)
 
 
 def random_compression(magnitude: float = 0.2, p: float = 1.0, debug: bool = False):
@@ -395,64 +398,6 @@ AVAILABLE_TRANSFORMS = {'random_blur': random_blur,
                         }
 
 
-class RandomWindowingAndInvert(ImageOnlyTransform):
-    """
-    Apply RandomWindowing and/or Invert with independent probabilities.
-
-    Args:
-        windowing_prob (float): Probability to apply RandomWindowing.
-        invert_prob (float): Probability to apply Invert.
-        windowing_kwargs (dict): Arguments to initialize RandomWindowing.
-        invert_kwargs (dict): Arguments to initialize Invert.
-        p (float): Overall probability of applying this transform.
-        debug (bool): Enable debug logging.
-    """
-
-    def __init__(self,
-                 windowing_prob: float = 0.5,
-                 invert_prob: float = 0.5,
-                 windowing_kwargs: dict = None,
-                 invert_kwargs: dict = None,
-                 p: float = 1.0,
-                 debug: bool = False):
-        super().__init__(p=p)
-        self.windowing_prob = windowing_prob
-        self.invert_prob = invert_prob
-        self.debug = debug
-
-        windowing_kwargs = windowing_kwargs or {}
-        invert_kwargs = invert_kwargs or {}
-
-        if debug:
-            logger.debug(f"Initializing RandomWindowingAndInvert with:")
-            logger.debug(f"  windowing_prob: {windowing_prob}")
-            logger.debug(f"  invert_prob: {invert_prob}")
-            logger.debug(f"  windowing_kwargs: {windowing_kwargs}")
-            logger.debug(f"  invert_kwargs: {invert_kwargs}")
-
-        self.windowing = RandomWindowing(p=1.0, debug=debug, **windowing_kwargs)
-        self.invert = Invert(p=1.0, debug=debug, **invert_kwargs)
-
-    def apply(self, img: np.ndarray, **params) -> np.ndarray:
-        if self.debug:
-            logger.debug(f"Applying RandomWindowingAndInvert to image with shape {img.shape}")
-
-        if np.random.rand() < self.windowing_prob:
-            if self.debug:
-                logger.debug("Applying RandomWindowing")
-            img = self.windowing.apply(img, **params)
-
-        if np.random.rand() < self.invert_prob:
-            if self.debug:
-                logger.debug("Applying Invert")
-            img = self.invert.apply(img, **params)
-
-        return img
-
-    def get_transform_init_args_names(self) -> tuple[str, ...]:
-        return ('windowing_prob', 'invert_prob', 'debug')
-
-
 class RandAugmentPixel(ImageOnlyTransform):
     """
     Apply multiple random pixel-level augmentations with configurable strength.
@@ -493,7 +438,6 @@ class RandAugmentPixel(ImageOnlyTransform):
     def __init__(self,
                  transforms: list[str] | dict[str, dict[str, Any]],
                  min_n: int = 1, max_n: int = 3,
-                 magnitude: float = 0.3,
                  replace: bool = False,
                  p: float = 1.0,
                  debug: bool = False):
@@ -502,12 +446,11 @@ class RandAugmentPixel(ImageOnlyTransform):
         self.min_n = min_n
         self.max_n = max_n
         self.replace = replace
-        self.magnitude = magnitude
+
         self.debug = debug
 
         if self.debug:
-            logger.debug(
-                f"Initializing RandAugmentPixel: min_n={min_n}, max_n={max_n}, magnitude={magnitude}, replace={replace}, p={p}")
+            logger.debug(f"Initializing RandAugmentPixel: min_n={min_n}, max_n={max_n}, replace={replace}, p={p}")
 
         # 변환 함수 인스턴스화
         self.transforms = []
@@ -522,11 +465,8 @@ class RandAugmentPixel(ImageOnlyTransform):
                 if name not in AVAILABLE_TRANSFORMS:
                     raise ValueError(f"Unknown transform: {name}")
 
-                if self.debug:
-                    logger.debug(f"Adding transform '{name}' with magnitude={magnitude}")
-
                 self.transform_names.append(name)
-                self.transforms.append(AVAILABLE_TRANSFORMS[name](magnitude=magnitude, p=1.0, debug=debug))
+                self.transforms.append(AVAILABLE_TRANSFORMS[name](**transforms[name]))
 
         # 입력이 변환 이름 -> 설정 매핑인 경우
         elif isinstance(transforms, dict):
@@ -540,10 +480,6 @@ class RandAugmentPixel(ImageOnlyTransform):
                 # p값이 지정되지 않았으면 기본값 1.0 사용
                 if 'p' not in kwargs:
                     kwargs['p'] = 1.0
-
-                # magnitude가 지정되지 않았으면 전역 magnitude 사용
-                if 'magnitude' not in kwargs:
-                    kwargs['magnitude'] = magnitude
 
                 # debug 옵션 추가
                 kwargs['debug'] = debug
@@ -644,7 +580,6 @@ def create_rand_augment(magnitude: float = 0.3, min_n: int = 1, max_n: int = 3, 
     return RandAugmentPixel(transforms=transforms,
                             min_n=min_n,
                             max_n=max_n,
-                            magnitude=magnitude,
                             replace=True,
                             debug=debug
                             )

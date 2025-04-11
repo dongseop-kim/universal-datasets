@@ -16,6 +16,8 @@ from .windowing import (HighlightTripleView, RandomWindowing,
 
 # 통합 transform registry
 AVAILABLE_TRANSFORMS: dict[str, Any] = {'resize': A.Resize,
+                                        'resize_smallest': A.SmallestMaxSize,
+                                        'resize_longest': A.LongestMaxSize,
                                         'letterbox': Letterbox,
                                         'random_flip': A.HorizontalFlip,
                                         'random_ratio': RandomRatio,
