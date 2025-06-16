@@ -232,6 +232,7 @@ class HighlightTripleView(ImageOnlyTransform):
         if self.debug:
             logger.debug(f"HighlightTripleView initialized (train={self.is_train})")
 
+    # TODO: 매직 변수들 scale, gamma, is_train, debug를 initialize 시에 받아서 처리하도록 변경
     def apply(self, img: np.ndarray, **params) -> np.ndarray:
         if self.debug:
             logger.debug(
