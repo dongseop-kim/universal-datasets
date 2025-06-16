@@ -246,8 +246,15 @@ class HighlightTripleView(ImageOnlyTransform):
         scale = self.scale
         gamma = self.gamma
         if self.is_train:
-            scale = np.random.uniform(self.scale * 0.75, self.scale * 1.25)
-            gamma = np.random.uniform(self.gamma * 0.75, self.gamma * 1.25)
+            # 80% chance to apply random scaling and gamma
+            if np.random.rand() < 0.8:
+                scale = np.random.uniform(self.scale * 0.75, self.scale * 1.25)
+                gamma = np.random.uniform(self.gamma * 0.75, self.gamma * 1.25)
+            else:
+                # 20% chance to use original scale and gamma
+                scale = self.scale
+                gamma = self.gamma
+
             if self.debug:
                 logger.debug(f"Randomized scale={scale:.2f}, gamma={gamma:.2f}")
 
