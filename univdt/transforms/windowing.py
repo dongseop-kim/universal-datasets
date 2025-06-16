@@ -203,7 +203,6 @@ class RandomWindowingInvert(ImageOnlyTransform):
     def get_transform_init_args_names(self) -> tuple[str, ...]:
         return ('windowing_prob', 'invert_prob', 'debug')
 
-
 class HighlightTripleView(ImageOnlyTransform):
     """
     Create a 3-channel visualization:
@@ -212,7 +211,9 @@ class HighlightTripleView(ImageOnlyTransform):
         - Channel 2: dark-enhanced view using gamma
 
     Args:
-        pre_aug (ImageOnlyTransform, optional): Pre-processing transform applied before highlight operations (e.g. invert)
+        scale (float): Base scaling factor for bright-enhanced view.
+        gamma (float): Base gamma value for dark-enhanced view.
+        is_train (bool): Whether the transform is used in training mode (controls randomness).
         p (float): Probability of applying the whole transform.
         debug (bool): Enable debug logging.
     """
@@ -220,23 +221,38 @@ class HighlightTripleView(ImageOnlyTransform):
     def __init__(self,
                  scale: float = 1.0,
                  gamma: float = 2.0,
-                 p: float = 1.0, debug: bool = False):
+                 is_train: bool = False,
+                 p: float = 1.0,
+                 debug: bool = False):
         super().__init__(p=p)
         self.scale = scale
         self.gamma = gamma
+        self.is_train = is_train
         self.debug = debug
         if self.debug:
-            logger.debug(f"HighlightTripleView initialized with pre_aug: {type()}")
+            logger.debug(f"HighlightTripleView initialized (train={self.is_train})")
 
     def apply(self, img: np.ndarray, **params) -> np.ndarray:
         if self.debug:
             logger.debug(
-                f"Input image shape: {img.shape}, dtype: {img.dtype}, min: {img.min():.2f}, max: {img.max():.2f}")
+                f"Input image shape: {img.shape}, dtype: {img.dtype}, "
+                f"min: {img.min():.2f}, max: {img.max():.2f}"
+            )
 
         img = min_max_normalize(img)
-        img = (img * 255.0).astype(np.uint8)  # Convert to uint8 for visualization
-        bright_view = self._highlight_bright_regions(img, scale=self.scale)
-        dark_view = self._highlight_dark_regions(img, gamma=self.gamma)
+        img = (img * 255.0).astype(np.uint8)
+
+        # Apply random variation in training mode
+        scale = self.scale
+        gamma = self.gamma
+        if self.is_train:
+            scale = np.random.uniform(self.scale * 0.75, self.scale * 1.25)
+            gamma = np.random.uniform(self.gamma * 0.75, self.gamma * 1.25)
+            if self.debug:
+                logger.debug(f"Randomized scale={scale:.2f}, gamma={gamma:.2f}")
+
+        bright_view = self._highlight_bright_regions(img, scale=scale)
+        dark_view = self._highlight_dark_regions(img, gamma=gamma)
 
         stacked = np.stack([bright_view, img, dark_view], axis=-1)
 
@@ -246,7 +262,7 @@ class HighlightTripleView(ImageOnlyTransform):
         return stacked
 
     def get_transform_init_args_names(self) -> tuple[str, ...]:
-        return ('pre_aug', 'debug')
+        return ('scale', 'gamma', 'is_train', 'debug')
 
     def _highlight_bright_regions(self, x: np.ndarray, scale=1.0) -> np.ndarray:
         x_norm = x.astype(np.float32) / 255.0
